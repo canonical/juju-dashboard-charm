@@ -1,0 +1,14 @@
+# Copyright 2021 Canonical
+# See LICENSE file for licensing details.
+name: juju-dashboard
+description: |
+  Charm for the Juju Dashboard
+summary: |
+  Charm for the Juju Dashboard
+series: [focal]
+provides:
+  dashboard:
+    interface: http
+requires:
+  controller:
+    interface: config
