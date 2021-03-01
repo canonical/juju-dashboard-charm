@@ -25,9 +25,9 @@ class JujuDashboardCharm(CharmBase):
         super().__init__(*args)
         self.framework.observe(self.on.start, self._on_start)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
-        self.framework.observe(self.on['dashboard'].relation_changed, self._on_dashboard_relation_changed)
-        self.framework.observe(self.on['controller'].relation_changed, self._on_controller_relation_changed)
-        # self._stored.set_default(things=[])33
+        self.framework.observe(self.on["dashboard"].relation_changed, self._on_dashboard_relation_changed)
+        self.framework.observe(self.on["controller"].relation_changed, self._on_controller_relation_changed)
+        self._stored.set_default(controllerData={})
 
     def _on_start(self, _):
         """
@@ -45,12 +45,8 @@ class JujuDashboardCharm(CharmBase):
         Any values defined in the configuration will override the values
         provided by the controller relation.
         """
-        logger.debug("Config changed")
-        logger.debug(self.config["model-url-template"])
-        # current = self.config["thing"]
-        # if current not in self._stored.things:
-        #     logger.debug("found a new thing: %r", current)
-        #     self._stored.things.append(current)
+        # logger.info(self.config["model-url-template"])
+        self.generate_and_save_index()
 
     def _on_dashboard_relation_changed(self, event):
         """
@@ -69,19 +65,35 @@ class JujuDashboardCharm(CharmBase):
         be relayed to the user via the controller when the user runs the
         `juju dashboard` command.
         """
-        if not isInstance(self._stored.controllerData, dict):
-            self._stored.controllerData = {}
-
-        self._stored.controllerData['controllerURL'] = event.relation.data[event.app]['controller-url']
-        self._stored.controllerData['modelURLTemplate'] = event.relation.data[event.app]['model-url-template']
-        self._stored.controllerData['identityProviderURL'] = event.relation.data[event.app]['identity-provider-url']
-        self._stored.controllerData['isJuju'] = event.relation.data[event.app]['is-juju']
+        self._stored.controllerData["controller-url"] = event.relation.data[event.app]["controller-url"]
+        self._stored.controllerData["model-url-template"] = event.relation.data[event.app]["model-url-template"]
+        self._stored.controllerData["identity-provider-url"] = event.relation.data[event.app]["identity-provider-url"]
+        self._stored.controllerData["is-juju"] = event.relation.data[event.app]["is-juju"]
         # Send the data to the controller for our endpoint
         # XXX get the machines IP address using:
         #   https://ops.readthedocs.io/en/latest/#ops.model.Network
-        event.relation.data[event.app]['hostname'] = "0.0.0.0:8080"
+        event.relation.data[event.app]["hostname"] = "0.0.0.0:8080"
         # XXX render data into the html page
-        pass
+        self.generate_and_save_index()
+
+    def generate_and_save_index(self):
+        """
+        Take the configuration values and render them to the index.html file
+        for display on the static page.
+        """
+        index_template = open("src/index.html.template", "r")
+        index_data = index_template.read()
+        index_template.close()
+
+        index_data = index_data.replace("{controller-url}", self._stored.controllerData.get("controller-url", ""))
+        index_data = index_data.replace("{model-url-template}", self._stored.controllerData.get("model-url-template", ""))
+        index_data = index_data.replace("{identity-provider-url}", self._stored.controllerData.get("identity-provider-url", ""))
+        index_data = index_data.replace("{is-juju}", self._stored.controllerData.get("is-juju", ""))
+        index_data = index_data.replace("{port}", "")
+
+        index = open("src/index.html", "w")
+        index.write(index_data)
+        index.close()
 
 if __name__ == "__main__":
     main(JujuDashboardCharm)

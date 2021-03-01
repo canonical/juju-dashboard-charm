@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h4>The data from the controller connection is:</h4>
+    <ul>
+      <li>controller-url: {controller-url}</li>
+      <li>model-url-template: {model-url-template}</li>
+      <li>identity-provider-url: {identity-provider-url}</li>
+      <li>is-juju: {is-juju}</li>
+      <li>port: {port}</li>
+    </ul>
+</body>
+</html>
