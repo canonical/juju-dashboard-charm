@@ -11,4 +11,4 @@ provides:
     interface: http
 requires:
   controller:
-    interface: config
+    interface: juju-dashboard
