@@ -52,7 +52,7 @@ class JujuDashboardCharm(CharmBase):
         provided by the controller relation.
         """
         # logger.info(self.config["model-url-template"])
-        self.generate_and_save_index()
+        self.generate_and_save_config()
         self.restart_server()
 
     def _on_dashboard_relation_changed(self, event):
@@ -81,27 +81,29 @@ class JujuDashboardCharm(CharmBase):
         #   https://ops.readthedocs.io/en/latest/#ops.model.Network
         #event.relation.data[event.app]["hostname"] = "0.0.0.0:8080"
         # XXX render data into the html page
-        self.generate_and_save_index()
+        self.generate_and_save_config()
         self.restart_server()
 
-    def generate_and_save_index(self):
+    def generate_and_save_config(self):
         """
         Take the configuration values and render them to the index.html file
         for display on the static page.
         """
-        index_template = open("src/index.html.template", "r")
-        index_data = index_template.read()
-        index_template.close()
+        config_tempalte = open("src/dist/config.js.template", "r")
+        config_data = config_tempalte.read()
+        config_tempalte.close()
 
-        index_data = index_data.replace("{controller-url}", self._stored.controllerData.get("controller-url", ""))
-        index_data = index_data.replace("{model-url-template}", self._stored.controllerData.get("model-url-template", ""))
-        index_data = index_data.replace("{identity-provider-url}", self._stored.controllerData.get("identity-provider-url", ""))
-        index_data = index_data.replace("{is-juju}", self._stored.controllerData.get("is-juju", ""))
-        index_data = index_data.replace("{port}", "")
+        is_juju = "true" if self._stored.controllerData.get("is-juju") else "false"
+        identity_provider_available = "true" if self._stored.controllerData.get("identity-provider-url") else "false"
+        config_data = config_data.replace("{{identityProviderAvailable}}", identity_provider_available)
+        config_data = config_data.replace("{{baseAppURL}}", "/")
+        config_data = config_data.replace("{{baseControllerURL}}", self._stored.controllerData.get("controller-url", ""))
+        config_data = config_data.replace("{{identityProviderURL}}", self._stored.controllerData.get("identity-provider-url", ""))
+        config_data = config_data.replace("{{isJuju}}", is_juju)
 
-        index = open("src/index.html", "w")
-        index.write(index_data)
-        index.close()
+        config = open("src/dist/config.js", "w")
+        config.write(config_data)
+        config.close()
 
     def start_server(self):
         subprocess.run(
