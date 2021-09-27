@@ -8,6 +8,9 @@ import os
 import signal
 import logging
 import subprocess
+import shutil
+
+from jinja2 import Environment, FileSystemLoader
 
 from ops.charm import CharmBase
 from ops.main import main
@@ -25,6 +28,7 @@ class JujuDashboardCharm(CharmBase):
 
     def __init__(self, *args):
         super().__init__(*args)
+        self.framework.observe(self.on.install, self._on_install)
         self.framework.observe(self.on.start, self._on_start)
         self.framework.observe(self.on.upgrade_charm, self._on_upgrade_charm)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
@@ -33,17 +37,26 @@ class JujuDashboardCharm(CharmBase):
         self._stored.set_default(controllerData={})
         hookenv.open_port(8080)
 
+    def _on_install(self, _):
+        """
+        Start the webserver to host the dashboard.
+        """
+        os.system("apt install -y nginx")
+        self.generate_and_save_config()
+        self.restart_nginx()
+
     def _on_start(self, _):
         """
         Start the webserver to host the dashboard.
         """
-        self.start_server()
+        pass
 
     def _on_upgrade_charm(self, _):
         """
         Restart the webserver to host the dashboard.
         """
-        self.restart_server()
+        self.generate_and_save_config()
+        self.restart_nginx()
 
     def _on_config_changed(self, _):
         """
@@ -51,9 +64,8 @@ class JujuDashboardCharm(CharmBase):
         Any values defined in the configuration will override the values
         provided by the controller relation.
         """
-        # logger.info(self.config["model-url-template"])
         self.generate_and_save_config()
-        self.restart_server()
+        self.restart_nginx()
 
     def _on_dashboard_relation_changed(self, event):
         """
@@ -74,7 +86,7 @@ class JujuDashboardCharm(CharmBase):
         """
         self._stored.controllerData["controller-url"] = event.relation.data[event.app]["controller-url"]
         self._stored.controllerData["model-url-template"] = event.relation.data[event.app]["model-url-template"]
-        self._stored.controllerData["identity-provider-url"] = event.relation.data[event.app].get("identity-provider-url", "Fail")
+        self._stored.controllerData["identity-provider-url"] = event.relation.data[event.app].get("identity-provider-url", "")
         self._stored.controllerData["is-juju"] = event.relation.data[event.app]["is-juju"]
         # Send the data to the controller for our endpoint
         # XXX get the machines IP address using:
@@ -82,39 +94,33 @@ class JujuDashboardCharm(CharmBase):
         #event.relation.data[event.app]["hostname"] = "0.0.0.0:8080"
         # XXX render data into the html page
         self.generate_and_save_config()
-        self.restart_server()
+        self.restart_nginx()
 
     def generate_and_save_config(self):
         """
         Take the configuration values and render them to the index.html file
         for display on the static page.
         """
-        config_tempalte = open("src/dist/config.js.template", "r")
-        config_data = config_tempalte.read()
-        config_tempalte.close()
+        data = self._stored.controllerData
+        env = Environment(loader=FileSystemLoader(os.getcwd()))
+        env.filters['bool'] = bool
 
-        is_juju = "true" if self._stored.controllerData.get("is-juju") else "false"
-        identity_provider_available = "true" if self._stored.controllerData.get("identity-provider-url") else "false"
-        config_data = config_data.replace("{{identityProviderAvailable}}", identity_provider_available)
-        config_data = config_data.replace("{{baseAppURL}}", "/")
-        config_data = config_data.replace("{{baseControllerURL}}", self._stored.controllerData.get("controller-url", ""))
-        config_data = config_data.replace("{{identityProviderURL}}", self._stored.controllerData.get("identity-provider-url", ""))
-        config_data = config_data.replace("{{isJuju}}", is_juju)
+        config_template = env.get_template("src/config.js.template")
+        config_template.stream(
+            controller_url=data.get("controller-url"),
+            base_app_url="/",
+            identity_provider_url=data.get("identity-provider-url"),
+            is_juju=data.get("is-juju")
+        ).dump("src/dist/config.js")
 
-        config = open("src/dist/config.js", "w")
-        config.write(config_data)
-        config.close()
+        nginx_template = env.get_template("src/nginx.conf.template")
+        nginx_template = nginx_template.stream(
+            dashboard_root=os.getcwd()
+        ).dump("/etc/nginx/sites-available/default")
 
-    def start_server(self):
-        subprocess.run(
-            "nohup python3 -m http.server 8080 --directory src/dist/ > /dev/null 2>&1 & echo $! > run.pid",
-            shell=True
-        )
+    def restart_nginx(self):
+        os.system("sudo service restart nginx")
 
-    def restart_server(self):
-        with open("run.pid", 'r') as pid_file:
-            os.kill(int(pid_file.readline()), signal.SIGTERM)
-        self.start_server()
 
 if __name__ == "__main__":
     main(JujuDashboardCharm)

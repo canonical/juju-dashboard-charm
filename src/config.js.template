@@ -1,14 +1,14 @@
 var jujuDashboardConfig = {
   // API host to allow app to connect and retrieve models
-  baseControllerURL: "{{baseControllerURL}}",
+  baseControllerURL: "{{controller_url}}",
   // Configurable base url to allow deploying to different paths.
-  baseAppURL: "{{baseAppURL}}",
+  baseAppURL: "{{base_app_url}}",
   // If true then identity will be provided by a third party provider.
-  identityProviderAvailable: {{identityProviderAvailable}},
+  identityProviderAvailable: {{identity_provider_url | bool | tojson}},
   // The URL of the third party identity provider.
-  identityProviderURL: "{{identityProviderURL}}",
+  identityProviderURL: "{{identity_provider_url}}",
   // Is this application being rendered in Juju and not JAAS. This flag should
   // only be used for superficial updates like logos. Use feature detection
   // for other environment features.
-  isJuju: {{isJuju}},
+  isJuju: {{is_juju | bool | tojson}},
 };

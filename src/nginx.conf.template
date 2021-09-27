@@ -1,0 +1,17 @@
+server {
+    listen 8080 default_server;
+    listen [::]:8080 default_server;
+
+    root {{dashboard_root}}/src/dist;
+    index index.html;
+
+    server_name _;
+
+    location / {
+        try_files /index.html =404;
+    }
+
+    location /static {
+        try_files $uri $uri/ =404; 
+    }
+}
