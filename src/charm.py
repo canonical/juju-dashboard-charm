@@ -115,6 +115,8 @@ class JujuDashboardCharm(CharmBase):
 
         nginx_template = env.get_template("src/nginx.conf.template")
         nginx_template = nginx_template.stream(
+            # nginx proxy_pass expects the protocol to be https
+            controller_ws_api=data.get("controller-url").replace("wss", "https"),
             dashboard_root=os.getcwd()
         ).dump("/etc/nginx/sites-available/default")
 
