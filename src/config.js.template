@@ -1,6 +1,6 @@
 var jujuDashboardConfig = {
   // API host to allow app to connect and retrieve models
-  baseControllerURL: "{{controller_url}}",
+  controllerAPIEndpoint: "{{controller_url}}",
   // Configurable base url to allow deploying to different paths.
   baseAppURL: "{{base_app_url}}",
   // If true then identity will be provided by a third party provider.
