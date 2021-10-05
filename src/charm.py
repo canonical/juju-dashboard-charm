@@ -84,6 +84,10 @@ class JujuDashboardCharm(CharmBase):
         self._stored.controllerData["identity-provider-url"] = event.relation.data[event.app].get("identity-provider-url", "")
         self._stored.controllerData["is-juju"] = event.relation.data[event.app]["is-juju"]
 
+        ip = str(self.model.get_binding(event.relation).network.ingress_address)
+        for relation in self.model.relations['controller']:
+            relation.data[self.app]['dashboard-ingress'] = ip
+
         self._configure()
 
     def _configure(self):
