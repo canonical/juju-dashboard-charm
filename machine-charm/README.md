@@ -4,8 +4,11 @@ The charm to deploy the dashboard for [Juju](https://juju.is) and [JAAS](https:/
 
 ## Usage
 
-This charm will be automatically deployed by your controller so you shouldn't
-need to deploy it yourself manually.
+```bash
+juju switch controller
+juju deploy juju-dashboard
+juju relate juju-dashboard controller
+```
 
 ## Developing
 
