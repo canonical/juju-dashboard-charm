@@ -26,11 +26,12 @@ class JujuDashboardCharm(CharmBase):
     def __init__(self, *args):
         super().__init__(*args)
         self.framework.observe(self.on.install, self._on_install)
-        self.framework.observe(self.on.start, self._on_start)
         self.framework.observe(self.on.upgrade_charm, self._on_upgrade_charm)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on["controller"].relation_changed,
                                self._on_controller_relation_changed)
+        self.framework.observe(self.on["dashboard"].relation_changed,
+                               self._on_dashboard_relation_changed)
         self._stored.set_default(controllerData={})
         hookenv.open_port(8080)
 
@@ -43,6 +44,10 @@ class JujuDashboardCharm(CharmBase):
 
     def _on_config_changed(self, _):
         self._configure()
+
+    def _on_dashboard_relation_changed(self, event):
+        for relation in self.model.relations["dashboard"]:
+            relation.data[self.app]["port"] = "8080"
 
     def _on_controller_relation_changed(self, event):
         """
