@@ -2,8 +2,6 @@
 # Copyright 2021 Canonical
 # See LICENSE file for licensing details.
 
-"""Charm the service."""
-
 import os
 import logging
 
@@ -14,7 +12,7 @@ from ops.model import ActiveStatus, BlockedStatus
 from ops.main import main
 from ops.framework import StoredState
 
-from charmhelpers.core import hookenv;
+from charmhelpers.core import hookenv
 
 
 logger = logging.getLogger(__name__)
@@ -31,46 +29,20 @@ class JujuDashboardCharm(CharmBase):
         self.framework.observe(self.on.start, self._on_start)
         self.framework.observe(self.on.upgrade_charm, self._on_upgrade_charm)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
-        self.framework.observe(self.on["dashboard"].relation_changed, self._on_dashboard_relation_changed)
-        self.framework.observe(self.on["controller"].relation_changed, self._on_controller_relation_changed)
+        self.framework.observe(self.on["controller"].relation_changed,
+                               self._on_controller_relation_changed)
         self._stored.set_default(controllerData={})
         hookenv.open_port(8080)
 
     def _on_install(self, _):
-        """
-        Start the webserver to host the dashboard.
-        """
         os.system("apt install -y nginx")
         self._configure()
 
-    def _on_start(self, _):
-        """
-        Start the webserver to host the dashboard.
-        """
-        pass
-
     def _on_upgrade_charm(self, _):
-        """
-        Restart the webserver to host the dashboard.
-        """
         self._configure()
 
     def _on_config_changed(self, _):
-        """
-        XXX Not implemented
-        Any values defined in the configuration will override the values
-        provided by the controller relation.
-        """
         self._configure()
-
-    def _on_dashboard_relation_changed(self, event):
-        """
-        XXX Not implemented
-        If the user wants to front the dashboard with a proxy return the
-        information about where the dashboard is being hosted so that it can
-        connect to the correct endpoint.
-        """
-        pass
 
     def _on_controller_relation_changed(self, event):
         """
@@ -81,7 +53,8 @@ class JujuDashboardCharm(CharmBase):
         `juju dashboard` command.
         """
         self._stored.controllerData["controller-url"] = event.relation.data[event.app]["controller-url"]
-        self._stored.controllerData["identity-provider-url"] = event.relation.data[event.app].get("identity-provider-url", "")
+        self._stored.controllerData["identity-provider-url"] = event.relation.data[event.app].get(
+            "identity-provider-url", "")
         self._stored.controllerData["is-juju"] = event.relation.data[event.app]["is-juju"]
 
         ip = str(self.model.get_binding(event.relation).network.ingress_address)
@@ -92,8 +65,9 @@ class JujuDashboardCharm(CharmBase):
 
     def _configure(self):
         """
-        Take the configuration values and render them to the index.html file
-        for display on the static page.
+        Take the configuration values and render them to the config.js file and
+        the nginx sites-available/default file. Then restarts all necessary
+        services.
         """
         data = self._stored.controllerData
 
@@ -129,6 +103,7 @@ class JujuDashboardCharm(CharmBase):
             self.unit.status = ActiveStatus()
         else:
             self.unit.status = BlockedStatus("Could not start nginx")
+
 
 if __name__ == "__main__":
     main(JujuDashboardCharm)
