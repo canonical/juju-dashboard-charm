@@ -4,6 +4,7 @@
 
 import os
 import logging
+import re
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -57,7 +58,12 @@ class JujuDashboardCharm(CharmBase):
         be relayed to the user via the controller when the user runs the
         `juju dashboard` command.
         """
-        self._stored.controllerData["controller-url"] = event.relation.data[event.app]["controller-url"]
+        # The controller charm provides the full controller path but we use this
+        # path to generate the controller and model paths so we need to remove
+        # the supplied "/api" suffix.
+        controller_url = event.relation.data[event.app]["controller-url"]
+        controller_url = re.sub('\/api$', '', controller_url)
+        self._stored.controllerData["controller-url"] = controller_url
         self._stored.controllerData["identity-provider-url"] = event.relation.data[event.app].get(
             "identity-provider-url", "")
         self._stored.controllerData["is-juju"] = event.relation.data[event.app]["is-juju"]
