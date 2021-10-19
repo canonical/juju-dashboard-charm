@@ -12,93 +12,91 @@ develop a new k8s charm using the Operator Framework:
     https://discourse.charmhub.io/t/4208
 """
 
+import os
 import logging
+
+from jinja2 import Environment, FileSystemLoader
 
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main
-from ops.model import ActiveStatus
+from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
+
 
 logger = logging.getLogger(__name__)
 
 
-class K8SCharmCharm(CharmBase):
-    """Charm the service."""
+class JujuDashboardKubernetesCharm(CharmBase):
+    """Juju Dashboard Kubernetes Charm"""
 
     _stored = StoredState()
 
     def __init__(self, *args):
         super().__init__(*args)
-        self.framework.observe(self.on.httpbin_pebble_ready, self._on_httpbin_pebble_ready)
-        self.framework.observe(self.on.config_changed, self._on_config_changed)
-        self.framework.observe(self.on.fortune_action, self._on_fortune_action)
-        self._stored.set_default(things=[])
+        self.framework.observe(self.on.start, self.configure_pod)
+        self.framework.observe(self.on.config_changed, self.configure_pod)
+        self._stored.set_default(spec=None)
 
-    def _on_httpbin_pebble_ready(self, event):
-        """Define and start a workload using the Pebble API.
+    def configure_pod(self, event):
+        """Assemble the pod spec and apply it, if possible."""
+        if not "image" in self.model.config:
+            message = "Missing required config: image"
+            logger.info(message)
+            self.model.unit.status = BlockedStatus(message)
+            return 
 
-        TEMPLATE-TODO: change this example to suit your needs.
-        You'll need to specify the right entrypoint and environment
-        configuration for your specific workload. Tip: you can see the
-        standard entrypoint of an existing container using docker inspect
+        env = Environment(loader=FileSystemLoader(os.getcwd()))
+        env.filters['bool'] = bool
 
-        Learn more about Pebble layers at https://github.com/canonical/pebble
-        """
-        # Get a reference the container attribute on the PebbleReadyEvent
-        container = event.workload
-        # Define an initial Pebble layer configuration
-        pebble_layer = {
-            "summary": "httpbin layer",
-            "description": "pebble config layer for httpbin",
-            "services": {
-                "httpbin": {
-                    "override": "replace",
-                    "summary": "httpbin",
-                    "command": "gunicorn -b 0.0.0.0:80 httpbin:app -k gevent",
-                    "startup": "enabled",
-                    "environment": {"thing": self.model.config["thing"]},
+        config_template = env.get_template("src/config.js.template")
+        congig_js = config_template.render(
+            base_app_url="/",
+            controller_api_endpoint="/api",
+            identity_provider_url="",
+            is_juju=True
+        )
+
+        # TODO: Get from controller relation when it's fixed in juju
+        controller_url = "wss://10.1.91.69:17070"
+        nginx_template = env.get_template("src/nginx.conf.template")
+        nginx_config = nginx_template.render(
+            # nginx proxy_pass expects the protocol to be https
+            controller_ws_api=controller_url.replace("wss", "https"),
+            dashboard_root="/srv"
+        )
+
+        self.model.unit.status = MaintenanceStatus("Setting pod spec")
+        self.model.pod.set_spec({
+            "version": 3,
+            "containers": [
+                {
+                    "name": self.app.name,
+                    "image": self.model.config["image"],
+                    "ports": [
+                        {
+                            "containerPort": 80,
+                        }
+                    ],
+                    'volumeConfig': [{
+                        'name': 'configs',
+                        'mountPath': '/srv/configs',
+                        'files': [
+                            {
+                                'path': 'config.js',
+                                'content': congig_js
+                            },
+                            {
+                                'path': 'nginx.conf',
+                                'content': nginx_config
+                            }
+                        ]
+                    }],
                 }
-            },
-        }
-        # Add intial Pebble config layer using the Pebble API
-        container.add_layer("httpbin", pebble_layer, combine=True)
-        # Autostart any services that were defined with startup: enabled
-        container.autostart()
-        # Learn more about statuses in the SDK docs:
-        # https://juju.is/docs/sdk/constructs#heading--statuses
-        self.unit.status = ActiveStatus()
+            ],
+        })
 
-    def _on_config_changed(self, _):
-        """Just an example to show how to deal with changed configuration.
-
-        TEMPLATE-TODO: change this example to suit your needs.
-        If you don't need to handle config, you can remove this method,
-        the hook created in __init__.py for it, the corresponding test,
-        and the config.py file.
-
-        Learn more about config at https://juju.is/docs/sdk/config
-        """
-        current = self.config["thing"]
-        if current not in self._stored.things:
-            logger.debug("found a new thing: %r", current)
-            self._stored.things.append(current)
-
-    def _on_fortune_action(self, event):
-        """Just an example to show how to receive actions.
-
-        TEMPLATE-TODO: change this example to suit your needs.
-        If you don't need to handle actions, you can remove this method,
-        the hook created in __init__.py for it, the corresponding test,
-        and the actions.py file.
-
-        Learn more about actions at https://juju.is/docs/sdk/actions
-        """
-        fail = event.params["fail"]
-        if fail:
-            event.fail(fail)
-        else:
-            event.set_results({"fortune": "A bug in the code is worth two in the documentation."})
+        self.model.unit.status = ActiveStatus()
 
 
 if __name__ == "__main__":
-    main(K8SCharmCharm)
+    main(JujuDashboardKubernetesCharm)
