@@ -62,7 +62,7 @@ class JujuDashboardCharm(CharmBase):
         # path to generate the controller and model paths so we need to remove
         # the supplied "/api" suffix.
         controller_url = event.relation.data[event.app]["controller-url"]
-        controller_url = re.sub('\/api$', '', controller_url)
+        controller_url = re.sub(r'\/api$', '', controller_url)
         self._stored.controllerData["controller-url"] = controller_url
         self._stored.controllerData["identity-provider-url"] = event.relation.data[event.app].get(
             "identity-provider-url", "")

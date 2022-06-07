@@ -1,3 +1,9 @@
 build/
 *.charm
 *.vscode
+
+*.coverage
+venv
+
+__pycache__
+*.pyc

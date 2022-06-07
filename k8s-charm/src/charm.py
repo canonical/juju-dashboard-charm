@@ -39,11 +39,11 @@ class JujuDashboardKubernetesCharm(CharmBase):
 
     def configure_pod(self, event):
         """Assemble the pod spec and apply it, if possible."""
-        if not "image" in self.model.config:
+        if "image" not in self.model.config:
             message = "Missing required config: image"
             logger.info(message)
             self.model.unit.status = BlockedStatus(message)
-            return 
+            return
 
         env = Environment(loader=FileSystemLoader(os.getcwd()))
         env.filters['bool'] = bool
