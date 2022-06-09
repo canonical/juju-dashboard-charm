@@ -7,14 +7,17 @@ description: |
   Charm for the Juju Dashboard
 summary: |
   Charm for the Juju Dashboard
+
 bases:
   - name: ubuntu
     channel: focal
     architectures:
       - amd64
+
 provides:
   dashboard:
     interface: http
+
 requires:
   controller:
     interface: juju-dashboard
