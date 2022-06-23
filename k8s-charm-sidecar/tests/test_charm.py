@@ -1,4 +1,4 @@
-# Copyright 2022 Penelope Valentine Gale
+# Copyright 2021 Ubuntu
 # See LICENSE file for licensing details.
 #
 # Learn more about testing at: https://juju.is/docs/sdk/testing
@@ -6,14 +6,14 @@
 import unittest
 from unittest.mock import Mock
 
-from charm import JujuDashboardCharm
+from charm import JujuDashboardKubernetesCharm
 from ops.model import ActiveStatus
 from ops.testing import Harness
 
 
 class TestCharm(unittest.TestCase):
     def setUp(self):
-        self.harness = Harness(JujuDashboardCharm)
+        self.harness = Harness(JujuDashboardKubernetesCharm)
         self.addCleanup(self.harness.cleanup)
         self.harness.begin()
 
@@ -36,8 +36,6 @@ class TestCharm(unittest.TestCase):
         self.assertEqual(action_event.fail.call_args, [("fail this",)])
 
     def test_httpbin_pebble_ready(self):
-        # Simulate making the Pebble socket available
-        self.harness.set_can_connect("httpbin", True)
         # Check the initial Pebble plan is empty
         initial_plan = self.harness.get_container_pebble_plan("httpbin")
         self.assertEqual(initial_plan.to_yaml(), "{}\n")

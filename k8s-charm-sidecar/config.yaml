@@ -1,0 +1,4 @@
+options:
+  image:
+    type: string
+    default: canonicalwebteam/jaas-dashboard:latest
