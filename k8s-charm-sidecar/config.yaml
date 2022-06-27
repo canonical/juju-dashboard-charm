@@ -1,4 +1,20 @@
+# Copyright 2022 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 options:
-  image:
+  controller-url:
+    default:
+    description: The URL to connect to the controller with. Provided by the controller when related; if defined will override the value provided on the controller relation.
     type: string
-    default: canonicalwebteam/jaas-dashboard:latest
+  identity-provider-url:
+    default:
+    description: The url used to communicate with the identity provider if available. Provided by the controller when related; if defined will override the value provided on the controller relation.
+    type: string
+  is-juju:
+    default: true
+    description: Whether this is a Juju or JAAS environment. Provided by the controller when related; if defined will override the value provided on the controller relation.
+    type: boolean
+  port:
+    default: 8080
+    description: The port to serve the dashboard on.
+    type: int

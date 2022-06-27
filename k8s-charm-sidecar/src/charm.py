@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2021 Ubuntu
+# Copyright 2022 Penelope Valentine Gale
 # See LICENSE file for licensing details.
 #
 # Learn more at: https://juju.is/docs/sdk
@@ -12,44 +12,39 @@ develop a new k8s charm using the Operator Framework:
     https://discourse.charmhub.io/t/4208
 """
 
-import os
 import logging
+import os
 
 from jinja2 import Environment, FileSystemLoader
 
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main
-from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
+from ops.model import ActiveStatus
 
 
 logger = logging.getLogger(__name__)
 
 
- class JujuDashboardKubernetesCharm(CharmBase):
+class JujuDashboardKubernetesCharm(CharmBase):
     """Juju Dashboard Kubernetes Charm"""
 
     _stored = StoredState()
 
     def __init__(self, *args):
         super().__init__(*args)
-        self.framework.observe(self.on.start, self.configure_pod)
-        self.framework.observe(self.on.config_changed, self.configure_pod)
-        self._stored.set_default(spec=None)
 
-    def configure_pod(self, event):
-        """Assemble the pod spec and apply it, if possible."""
-        if "image" not in self.model.config:
-            message = "Missing required config: image"
-            logger.info(message)
-            self.model.unit.status = BlockedStatus(message)
-            return
+        self.framework.observe(self.on.dashboard_pebble_ready, self._on_dashboard_pebble_ready)
 
+    def _on_dashboard_pebble_ready(self, event):
+        """Things are ready; go ahead and start up our service."""
+
+        # Grab the config template.
         env = Environment(loader=FileSystemLoader(os.getcwd()))
         env.filters['bool'] = bool
 
         config_template = env.get_template("src/config.js.template")
-        congig_js = config_template.render(
+        _ = config_template.render(
             base_app_url="/",
             controller_api_endpoint="/api",
             identity_provider_url="",
@@ -59,19 +54,13 @@ logger = logging.getLogger(__name__)
         # TODO: Get from controller relation when it's fixed in juju
         controller_url = "wss://10.1.91.69:17070"
         nginx_template = env.get_template("src/nginx.conf.template")
-        nginx_config = nginx_template.render(
+        _ = nginx_template.render(
             # nginx proxy_pass expects the protocol to be https
             controller_ws_api=controller_url.replace("wss", "https"),
             dashboard_root="/srv"
         )
+        """ TODO: integrate the following into the layer def.
 
-        self.model.unit.status = MaintenanceStatus("Setting pod spec")
-        self.model.pod.set_spec({
-            "version": 3,
-            "containers": [
-                {
-                    "name": self.app.name,
-                    "image": self.model.config["image"],
                     "ports": [
                         {
                             "containerPort": 80,
@@ -90,12 +79,31 @@ logger = logging.getLogger(__name__)
                                 'content': nginx_config
                             }
                         ]
-                    }],
-                }
-            ],
-        })
+        """
 
-        self.model.unit.status = ActiveStatus()
+        # Get a reference the container attribute on the PebbleReadyEvent
+        container = event.workload
+        # Define an initial Pebble layer configuration
+        pebble_layer = {
+            "summary": "dashboard layer",
+            "description": "pebble config layer for dashboard",
+            "services": {
+                "dashboard": {
+                    "override": "replace",
+                    "summary": "dashboard",
+                    "command": "",
+                    "startup": "enabled",
+                    "environment": {},
+                }
+            },
+        }
+        # Add initial Pebble config layer using the Pebble API
+        container.add_layer("dashboard", pebble_layer, combine=True)
+        # Autostart any services that were defined with startup: enabled
+        container.autostart()
+        # Learn more about statuses in the SDK docs:
+        # https://juju.is/docs/sdk/constructs#heading--statuses
+        self.unit.status = ActiveStatus()
 
 
 if __name__ == "__main__":

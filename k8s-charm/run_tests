@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# Copyright 2022 Penelope Valentine Gale
+# Copyright 2021 Ubuntu
 # See LICENSE file for licensing details.
 
 if [ -z "$VIRTUAL_ENV" -a -d venv/ ]; then
@@ -13,5 +13,5 @@ else
 fi
 
 flake8
-coverage run --branch --source=src -m unittest -v "$@"
+coverage run --source=src -m unittest -v "$@"
 coverage report -m

@@ -1,28 +1,25 @@
-# juju-dashboard
+# k8s-charm
 
 ## Description
 
-This is a charm built to deploy the Juju dashboard.
-
-It replaces previous methods of delivering the dashboard with a Juju
-native one.
+TODO: Describe your charm in a few paragraphs of Markdown
 
 ## Usage
 
-TODO
+TODO: Provide high-level usage, such as required config or relations
 
-## Relations
 
-This charm provides an http interface called "dashboard."
+## Developing
 
-It requires the "juju-dashboard" interface on the Juju controller charm.
+Create and activate a virtualenv with the development requirements:
 
-## OCI Images
+    virtualenv -p python3 venv
+    source venv/bin/activate
+    pip install -r requirements-dev.txt
 
-This charm uses the JAAS team's build of the dashboard: canonicalwebteam/jaas-dashboard:latest
+## Testing
 
-## Contributing
+The Python operator framework includes a very nice harness for testing
+operator behaviour without full deployment. Just `run_tests`:
 
-Please see the [Juju SDK docs](https://juju.is/docs/sdk) for guidelines
-on enhancements to this charm following best practice guidelines, and
-`CONTRIBUTING.md` for developer guidance.
+    ./run_tests
