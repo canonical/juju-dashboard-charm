@@ -36,24 +36,33 @@ class JujuDashboardKubernetesCharm(CharmBase):
     def __init__(self, *args):
         super().__init__(*args)
         self.framework.observe(self.on.start, self._on_start)
-        self.framework.observe(self.on["controller"].relation_changed, self._configure_pod)
+        self.framework.observe(self.on["controller"].relation_changed,
+                               self._on_controller_relation_changed)
 
     def _on_start(self, event):
-        self.model.unit.status = ActiveStatus("Ready for controller relation.")
-
-    def _configure_pod(self, event):
-        """Assemble the pod spec and apply it, if possible."""
-
         if "image" not in self.model.config:
             message = "Missing required config: image"
             logger.info(message)
             self.model.unit.status = BlockedStatus(message)
             return
 
+        self._configure_pod("", "", True)
+
+        self.model.unit.status = MaintenanceStatus("Waiting for controller relation.")
+
+    def _on_controller_relation_changed(self, event):
+
         requires = JujuDashReq(self, event.relation, event.app)
         if not requires.data["controller_url"]:
             self.unit.status = BlockedStatus("Missing controller URL")
             return
+
+        self._configure_pod(**requires.data)
+
+        self.model.unit.status = ActiveStatus()
+
+    def _configure_pod(self, controller_url, identity_provider_url, is_juju):
+        """Assemble the pod spec and apply it, if possible."""
 
         env = Environment(loader=FileSystemLoader(os.getcwd()))
         env.filters['bool'] = bool
@@ -62,11 +71,10 @@ class JujuDashboardKubernetesCharm(CharmBase):
         congig_js = config_template.render(
             base_app_url="/",
             controller_api_endpoint="/api",
-            identity_provider_url=requires.data["identity_provider_url"],
-            is_juju=requires.data["is_juju"]
+            identity_provider_url=identity_provider_url,
+            is_juju=is_juju,
         )
 
-        controller_url = requires.data["controller_url"]
         nginx_template = env.get_template("src/nginx.conf.template")
         nginx_config = nginx_template.render(
             # nginx proxy_pass expects the protocol to be https
