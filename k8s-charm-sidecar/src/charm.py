@@ -15,13 +15,12 @@ develop a new k8s charm using the Operator Framework:
 import logging
 import os
 
+from charms.juju_dashboard.v0.juju_dashboard import JujuDashReq
 from jinja2 import Environment, FileSystemLoader
-
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main
-from ops.model import ActiveStatus
-
+from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
 
 logger = logging.getLogger(__name__)
 
@@ -34,56 +33,69 @@ class JujuDashboardKubernetesCharm(CharmBase):
     def __init__(self, *args):
         super().__init__(*args)
 
-        self.framework.observe(self.on.dashboard_pebble_ready, self._on_dashboard_pebble_ready)
-
-    def _on_dashboard_pebble_ready(self, event):
-        """Things are ready; go ahead and start up our service."""
-
-        # Grab the config template.
-        env = Environment(loader=FileSystemLoader(os.getcwd()))
-        env.filters['bool'] = bool
-
-        config_template = env.get_template("src/config.js.template")
-        _ = config_template.render(
-            base_app_url="/",
-            controller_api_endpoint="/api",
-            identity_provider_url="",
-            is_juju=True
+        self.framework.observe(
+            self.on["controller"].relation_changed, self._on_controller_relation_changed
+        )
+        self.framework.observe(
+            self.on["dashboard"].relation_changed, self._on_dashboard_relation_changed
         )
 
-        # TODO: Get from controller relation when it's fixed in juju
-        controller_url = "wss://10.1.91.69:17070"
-        nginx_template = env.get_template("src/nginx.conf.template")
-        _ = nginx_template.render(
-            # nginx proxy_pass expects the protocol to be https
-            controller_ws_api=controller_url.replace("wss", "https"),
-            dashboard_root="/srv"
-        )
-        """ TODO: integrate the following into the layer def.
+    def _on_dashboard_relation_changed(self, event):
+        """When something relates to the dashboard, tell it that we speak on port 8080."""
+        event.relation.data[self.app]["port"] = "8080"
 
-                    "ports": [
-                        {
-                            "containerPort": 80,
-                        }
-                    ],
-                    'volumeConfig': [{
-                        'name': 'configs',
-                        'mountPath': '/srv/configs',
-                        'files': [
-                            {
-                                'path': 'config.js',
-                                'content': congig_js
-                            },
-                            {
-                                'path': 'nginx.conf',
-                                'content': nginx_config
-                            }
-                        ]
+    def _on_controller_relation_changed(self, event):
+        """When a controller relation has been setup, configure our node container."""
+        requires = JujuDashReq(self, event.relation, event.app)
+        if not requires.data["controller_url"]:
+            self.unit.status = BlockedStatus("Missing controller URL")
+            return
+
+        dashboard_config, nginx_config = self._render_config(self, **requires.data)
+        container = self.unit.get_container("dashboard")
+        if not container.can_connect():
+            event.defer()
+            self.unit.status = MaintenanceStatus("Waiting for container.")
+            return
+
+        self._add_layer(container, dashboard_config, nginx_config)
+
+        self.unit.status = ActiveStatus()
+
+    def _render_config(self, controller_url, identity_provider_url, is_juju):
+        """
+        Given data from the controller relation, render config templates.
+
+        Returns the dashboard and nginx template as strings.
         """
 
-        # Get a reference the container attribute on the PebbleReadyEvent
-        container = event.workload
-        # Define an initial Pebble layer configuration
+        env = Environment(loader=FileSystemLoader(os.getcwd()))
+        env.filters["bool"] = bool
+
+        config_template = env.get_template("src/config.js.template")
+        config = config_template.render(
+            base_app_url="/",
+            controller_api_endpoint="/api",
+            identity_provider_url=identity_provider_url,
+            is_juju=is_juju,
+        )
+
+        nginx_template = env.get_template("src/nginx.conf.template")
+        nginx_config = nginx_template.render(
+            # nginx proxy_pass expects the protocol to be https
+            controller_ws_api=controller_url.replace("wss", "https"),
+            dashboard_root="/srv",
+        )
+
+        return config, nginx_config
+
+    def _add_layer(self, container, dashboard_config, nginx_config):
+        """
+        Add and configure our pebble layer.
+
+        Adds a working nodejs server to our container.
+        """
+
         pebble_layer = {
             "summary": "dashboard layer",
             "description": "pebble config layer for dashboard",
@@ -91,19 +103,18 @@ class JujuDashboardKubernetesCharm(CharmBase):
                 "dashboard": {
                     "override": "replace",
                     "summary": "dashboard",
-                    "command": "",
+                    "command": "/entrypoint",
                     "startup": "enabled",
                     "environment": {},
                 }
             },
         }
-        # Add initial Pebble config layer using the Pebble API
         container.add_layer("dashboard", pebble_layer, combine=True)
-        # Autostart any services that were defined with startup: enabled
+
+        container.push("/srv/config.js", dashboard_config)
+        container.push("/srv/nginx.config", nginx_config)
+
         container.autostart()
-        # Learn more about statuses in the SDK docs:
-        # https://juju.is/docs/sdk/constructs#heading--statuses
-        self.unit.status = ActiveStatus()
 
 
 if __name__ == "__main__":

@@ -5,8 +5,9 @@
 
 import unittest
 
-from charm import JujuDashboardKubernetesCharm
 from ops.testing import Harness
+
+from charm import JujuDashboardKubernetesCharm
 
 
 class TestCharm(unittest.TestCase):

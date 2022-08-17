@@ -1,7 +1,7 @@
 # Copyright 2022 Penelope Valentine Gale
 # See LICENSE file for licensing details.
 
-name: juju-dashboard
+name: juju-dashboard-k8s
 description: |
   Kubernetes Charm for the Juju Dashboard
 summary: |
