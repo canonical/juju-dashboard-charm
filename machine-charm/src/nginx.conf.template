@@ -4,8 +4,14 @@ map $http_upgrade $connection_upgrade {
 }
 
 server {
+{% if dns_name is defined and dns_name %}
+    listen 443 ssl;
+    ssl_certificate /srv/{{dns_name}}_fullchain.pem;
+    ssl_certificate_key /srv/{{dns_name}}.key;
+{% else %}
     listen 8080 default_server;
     listen [::]:8080 default_server;
+{% endif %}
 
     root {{dashboard_root}}/src/dist;
     index index.html;
