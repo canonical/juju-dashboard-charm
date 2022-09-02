@@ -24,8 +24,6 @@ class JujuDashboardCharm(CharmBase):
     def __init__(self, *args):
         super().__init__(*args)
         self.framework.observe(self.on.install, self._on_install)
-        # self.framework.observe(self.on.upgrade_charm, self._on_upgrade_charm)
-        # self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on["controller"].relation_changed,
                                self._on_controller_relation_changed)
         self.framework.observe(self.on["dashboard"].relation_changed,
