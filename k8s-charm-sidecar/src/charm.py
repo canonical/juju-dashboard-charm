@@ -51,7 +51,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
             self.unit.status = BlockedStatus("Missing controller URL")
             return
 
-        dashboard_config, nginx_config = self._render_config(self, **requires.data)
+        dashboard_config, nginx_config = self._render_config(**requires.data)
         container = self.unit.get_container("dashboard")
         if not container.can_connect():
             event.defer()
@@ -103,7 +103,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
                 "dashboard": {
                     "override": "replace",
                     "summary": "dashboard",
-                    "command": "/entrypoint",
+                    "command": "/srv/entrypoint",
                     "startup": "enabled",
                     "environment": {},
                 }

@@ -87,8 +87,12 @@ class JujuDashData(Mapping):
                 juju-controller application.
 
         """
+        # Quick hack to fix a k8s bug in the controller charm.
+        controller_url = data.get("controller-url")
+        controller_url = controller_url.replace("[", "").replace("]", "")
+        # End quick hack!
         self._data = {
-            "controller_url": re.sub(r'\/api$', '', data.get("controller-url", "")),
+            "controller_url": re.sub(r'\/api$', '', controller_url),
             "identity_provider_url": data.get("identity-provider-url", ""),
             "is_juju": data.get("is-juju", True),
         }
