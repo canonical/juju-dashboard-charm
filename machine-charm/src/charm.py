@@ -68,7 +68,8 @@ class JujuDashboardCharm(CharmBase):
             is_juju=is_juju
         ).dump("src/dist/config.js")
 
-        controller_url.replace("wss", "https")
+        # nginx proxy_pass expects the protocol to be https
+        controller_url = controller_url.replace("wss://", "https://")
         if not controller_url.startswith('https://'):
             controller_url = 'https://{}'.format(controller_url)
 
@@ -78,8 +79,7 @@ class JujuDashboardCharm(CharmBase):
 
         nginx_template = env.get_template("src/nginx.conf.template")
         nginx_template = nginx_template.stream(
-            # nginx proxy_pass expects the protocol to be https
-            controller_ws_api=controller_url.replace("wss", "https"),
+            controller_ws_api=controller_url,
             dashboard_root=os.getcwd(),
             dns_name=self.config.get('dns-name')
         ).dump("/etc/nginx/sites-available/default")
