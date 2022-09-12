@@ -1,6 +1,6 @@
 # Juju Dashboard Charm
 
-This repository contains charms charms that deploy the dashboard for [Juju](https://juju.is) and [JAAS](https://jaas.ai) into Machine and Kubernetes environments.
+This repository contains charms that deploy the dashboard for [Juju](https://juju.is) and [JAAS](https://jaas.ai) into Machine and Kubernetes environments.
 
 # Building and Testing the Machine Charm
 
@@ -21,7 +21,7 @@ juju deploy ubuntu
 
 # Switch to the controller model and setup the dashboard
 juju switch controller
-juju deploy ./juju_dashboard*.charm dashboard
+juju deploy ./juju-dashboard*.charm dashboard
 juju relate controller dashboard
 juju dashboard
 ```
@@ -112,10 +112,13 @@ ENTRYPOINT ["./entrypoint"]
 You're finally ready to build the charm! Change to the root directory of this repo, and run:
 
 ```
-cd k8s-charm
+# Build the charm
+cd ./k8s-charm
 charmcraft pack
+
+# Switch to the controller model and deploy the dashboard
 juju switch controller
-juju deploy --resource dashboard-image=<image id> ./juju*.charm dashboard
+juju deploy --resource dashboard-image=<image id> ./juju-dashboard*.charm dashboard
 juju relate controller dashboard
 juju dashboard
 ```
