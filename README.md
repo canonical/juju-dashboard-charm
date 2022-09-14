@@ -124,3 +124,27 @@ juju dashboard
 ```
 
 Login to the dashboard, per the instructions from the `juju dashboard` command.
+
+
+# Tips and Tricks for Testing
+
+## Acccess the Dashboard Without a Proxy
+
+Sometimes, it may be useful to access the dashboard directly, rather than through the ssh tunnel. (E.g., you are trying to determine which part of the pipeline has broken, or access a test server remotely.)
+
+This is made difficult in development environments, where the controller will typically be using self signed certs. Modern browsers will simply refuse to connect to the controller API. Here's a workaround:
+
+### In Firefox, Accept the Controller's Self Signed Cert
+
+You must tell your browser to trust the controller's cert in order to get a working dashboard. This requires Firefox, or another browser that allows you to override the security warning. Here's how to do so:
+
+1. From the CLI, execute `juju switch controller && juju status`
+2. Note the ip address for the controller, and for the dashboard.
+3. Open Firefox, and visit https://<controller ip>:17070
+4. Click to the advanced part of the security prompt, and accept the risk.
+5. Firefox will display a "bad request" page. This is okay. You have successfully accepted the ssl cert!
+
+### Visit the dashboard
+1. From the CLI, execute `juju dashboard`, and make note of the username and password. You don't need to leave the command running, as you are accessing the dashboard directly, rather than using the proxy server.
+2. In Firefox, visit https://<dashboard ip>.
+3. Login with username and password you obtained in step 1.
