@@ -1,16 +1,8 @@
 #!/usr/bin/env python3
-# Copyright 2022 Penelope Valentine Gale
+# Copyright 2022 Canonical
 # See LICENSE file for licensing details.
 #
 # Learn more at: https://juju.is/docs/sdk
-
-"""Charm the service.
-
-Refer to the following post for a quick-start guide that will help you
-develop a new k8s charm using the Operator Framework:
-
-    https://discourse.charmhub.io/t/4208
-"""
 
 import logging
 import os
@@ -18,7 +10,6 @@ import os
 from charms.juju_dashboard.v0.juju_dashboard import JujuDashReq
 from jinja2 import Environment, FileSystemLoader
 from ops.charm import CharmBase
-from ops.framework import StoredState
 from ops.main import main
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
 
@@ -26,12 +17,24 @@ logger = logging.getLogger(__name__)
 
 
 class JujuDashboardKubernetesCharm(CharmBase):
-    """Juju Dashboard Kubernetes Charm"""
+    """Juju Dashboard Kubernetes Charm
 
-    _stored = StoredState()
+    This is the kubernetes version of the Juju Dashboard charm. The charm creates a nodejs
+    service providing the dashboard gui for a Juju controller. Relating to a controller
+    gives the dashboad the information it needs to talk to a specific local controller.
 
+    This charm requires a `controller` endpoint, and provides a `dashboard` endpoint.
+    - The controller relation allows the dashboard to connect to a Juju controller.
+    - The dashboard relation allows an http proxy to connect to the dashboard charm.
+
+    Note: This charm will not add the dashboard layers to the workload until a relation to
+    the controller is established.
+
+    """
     def __init__(self, *args):
         super().__init__(*args)
+
+        self.framework.observe(self.on.install, self._on_install)
 
         self.framework.observe(
             self.on["controller"].relation_changed, self._on_controller_relation_changed
@@ -40,12 +43,15 @@ class JujuDashboardKubernetesCharm(CharmBase):
             self.on["dashboard"].relation_changed, self._on_dashboard_relation_changed
         )
 
+    def _on_install(self, _):
+        self.unit.status = MaintenanceStatus("Awaiting controller relation.")
+
     def _on_dashboard_relation_changed(self, event):
         """When something relates to the dashboard, tell it that we speak on port 8080."""
         event.relation.data[self.app]["port"] = "8080"
 
     def _on_controller_relation_changed(self, event):
-        """When a controller relation has been setup, configure our node container."""
+        """A controller relation has been setup; configure our workload."""
         requires = JujuDashReq(self, event.relation, event.app)
         if not requires.data["controller_url"]:
             self.unit.status = BlockedStatus("Missing controller URL")
