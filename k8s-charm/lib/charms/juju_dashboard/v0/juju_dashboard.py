@@ -8,6 +8,7 @@ temporary) quirk with the way that the Juju 3.0 beta was returning networking da
 
 """
 import re
+from subprocess import check_output
 from typing import Mapping
 
 from ops.charm import CharmBase
@@ -52,7 +53,7 @@ class JujuDashReq:
         if charm.unit.is_leader():
             # TODO: handle the situation where there are multiple dashes, and the endpoint
             # is the haproxy address.
-            ip = str(charm.model.get_binding(relation).network.ingress_address)
+            ip = check_output(["unit-get", "public-address"]).decode().strip()
             relation.data[charm.model.app]['dashboard-ingress'] = ip
 
 

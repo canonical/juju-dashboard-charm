@@ -5,6 +5,7 @@ with a url to connect to, as well as optional additional configuration informati
 
 """
 import re
+from subprocess import check_output
 from typing import Mapping
 
 from ops.charm import CharmBase
@@ -49,7 +50,7 @@ class JujuDashReq:
         if charm.unit.is_leader():
             # TODO: handle the situation where there are multiple dashes, and the endpoint
             # is the haproxy address.
-            ip = str(charm.model.get_binding(relation).network.ingress_address)
+            ip = check_output(["unit-get", "public-address"]).decode().strip()
             relation.data[charm.model.app]['dashboard-ingress'] = ip
 
 
