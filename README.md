@@ -6,7 +6,7 @@ This repository contains charms that deploy the dashboard for [Juju](https://juj
 
 Building the machine charm is fairly straightforward. You need a machine with Juju 3.0+ installed. The rest of the steps, in brief, are:
 
-```
+```sh
 # From the root directory of this repo
 
 # Build the charm
@@ -40,11 +40,8 @@ Bulid from [source](https://github.com/juju/juju), or `snap install --channel=3.
 
 Follow the [guide on the docker website](https://docs.docker.com/desktop/install/linux-install/) to install the latest version of the Docker engine.
 
-## Install nodejs and yarn
-
-TODO
-
 ## Bootstrap microk8s
+
 [Follow the guide here](https://juju.is/docs/olm/microk8s)
 
 In brief:
@@ -58,54 +55,19 @@ su - $USER
 
 microk8s status --wait-ready
 microk8s.enable hostpath-storage dns
-juju bootstrap microk8s micro
+
+microk8s config | juju add-k8s --client micro
+juju bootstrap micro
 ```
 
-## js-libjuju
-[Source](https://github.com/juju/js-libjuju#readme)
-
-js-libjuju is a JavasScript library that interfaces with the Juju API. Periodically, it is necessary to rebuild it so that it  gets the latest API facades from Juju. In order to do so:
-
-1. Checkout juju source, and execute `go run ./generate/schemagen -admin-facades --facade-group=client,jimm ./apiserver/facades/schema.json`
-2. Run `npm run store-schema`
-3. Clone `git@github.com:juju/js-libjuju.git`
-4. Run `yarn build` in the `js-libjuju` root.
-5. Run `yarn link` to add the local copy of this library to your local node_modules.
-
 ## jaas-dashboard
+
 [Source](https://github.com/canonical-web-and-design/jaas-dashboard#readme)
 
 1. Checkout `git@github.com:canonical-web-and-design/jaas-dashboard.git`
-2. Run `yarn build`
-3. Run `yarn link @canonical/js-libjuju`, so that you have an updated copy of js-libjuju in your project.
-4. Run `yarn generate-release-tarball`
-5. Replace the Dockerfile in the repo's root directory with the text below (TODO: version #):
-
-```
-# syntax=docker/dockerfile:experimental
-
-FROM node:16 as build-js
-
-WORKDIR /srv
-
-COPY juju-dashboard-v0.9.3.tgz .
-RUN tar xvzf juju-dashboard-v0.9.3.tgz
-
-FROM ubuntu:focal
-
-RUN apt update && apt install --yes nginx
-
-WORKDIR /srv
-
-COPY nginx.conf /etc/nginx/sites-available/default
-COPY entrypoint entrypoint
-COPY --from=build-js /srv/package .
-
-ENTRYPOINT ["./entrypoint"]
-```
-6. Build the container with `DOCKER_BUILDKIT=1 docker build -t juju-dashboard .`
-7. Take note of the image id. You can get it with `docker image inspect juju-dashboard | grep "Id"`
-8. Add the docker image that you just build to microk8s' build in docker repo, as it cannot talk to the docker registry on the host machine: `docker image save juju-dashboard | microk8s ctr image import -`
+2. Build the container with `DOCKER_BUILDKIT=1 docker build -t juju-dashboard .`
+3. Take note of the image id. You can get it with `docker image inspect juju-dashboard | grep "Id"`
+4. Add the docker image that you just build to microk8s' build in docker repo, as it cannot talk to the docker registry on the host machine: `docker image save <image id> | microk8s ctr image import -`
 
 ## Building the Kubernetes Charm
 
@@ -118,13 +80,13 @@ charmcraft pack
 
 # Switch to the controller model and deploy the dashboard
 juju switch controller
+# image id must include: "sha256:..."
 juju deploy --resource dashboard-image=<image id> ./juju-dashboard*.charm dashboard
 juju relate controller dashboard
 juju dashboard
 ```
 
 Login to the dashboard, per the instructions from the `juju dashboard` command.
-
 
 # Tips and Tricks for Testing
 
@@ -145,6 +107,7 @@ You must tell your browser to trust the controller's cert in order to get a work
 5. Firefox will display a "bad request" page. This is okay. You have successfully accepted the ssl cert!
 
 ### Visit the dashboard
+
 1. From the CLI, execute `juju dashboard`, and make note of the username and password. You don't need to leave the command running, as you are accessing the dashboard directly, rather than using the proxy server.
 2. In Firefox, visit https://<dashboard ip>.
 3. Login with username and password you obtained in step 1.
