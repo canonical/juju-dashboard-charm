@@ -8,6 +8,8 @@ The charm to deploy the dashboard for [Juju](https://juju.is) and [JAAS](https:/
 juju switch controller
 juju deploy juju-dashboard
 juju relate juju-dashboard controller
+juju expose juju-dashboard
+juju dashboard
 ```
 
 ## Developing

@@ -4,10 +4,10 @@ map $http_upgrade $connection_upgrade {
 }
 
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
+    listen 8080 default_server;
+    listen [::]:8080 default_server;
 
-    root {{dashboard_root}};
+    root {{dashboard_root}}/src/dist;
     index index.html;
 
     server_name _;
