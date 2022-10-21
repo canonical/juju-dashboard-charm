@@ -55,7 +55,7 @@ class JujuDashReq:
         if charm.unit.is_leader():
             # TODO: handle the situation where there are multiple dashes, and the endpoint
             # is the haproxy address.
-            ip = check_output(["unit-get", "public-address"]).decode().strip()
+            ip = str(charm.model.get_binding(relation).network.ingress_address)
             relation.data[charm.model.app]['dashboard-ingress'] = ip
 
 
