@@ -1,3 +1,5 @@
+# Copyright 2022 Canonical Ltd.
+# See LICENSE file for licensing details.
 """This library defines the requires side of a relation to a Juju controller.
 
 The relation is straightforward: we expect the other side of the relation to provide us
