@@ -67,7 +67,7 @@ juju bootstrap micro
 1. Checkout `git@github.com:canonical-web-and-design/jaas-dashboard.git`
 2. Build the container with `DOCKER_BUILDKIT=1 docker build -t juju-dashboard .`
 3. Take note of the image id. You can get it with `docker image inspect juju-dashboard | grep "Id"`
-4. Add the docker image that you just build to microk8s' build in docker repo, as it cannot talk to the docker registry on the host machine: `docker image save <image id> | microk8s ctr image import -`
+4. Add the docker image that you just build to microk8s' build in docker repo, as it cannot talk to the docker registry on the host machine: `docker image save juju-dashboard | microk8s ctr image import -`
 
 ## Building the Kubernetes Charm
 
