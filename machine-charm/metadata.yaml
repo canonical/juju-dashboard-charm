@@ -1,6 +1,8 @@
 # Copyright 2021 Canonical
 # See LICENSE file for licensing details.
 name: juju-dashboard
+assumes:
+- juju >= 3.0
 display-name: |
   Charm for Juju Dashboard
 description: |
