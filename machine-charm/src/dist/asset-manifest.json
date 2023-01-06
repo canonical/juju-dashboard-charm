@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.76384a48.css",
-    "main.js": "/static/js/main.77dbb4f3.js",
+    "main.css": "/static/css/main.a058895d.css",
+    "main.js": "/static/js/main.47cf2015.js",
     "static/media/kubernetes.svg": "/static/media/kubernetes.f5c2ef9a76c4d9db93921a2016a82660.svg",
     "static/media/aws.svg": "/static/media/aws.80fb338eafdbc954377c1e4592b3e9e0.svg",
     "static/media/logo-black-on-white.svg": "/static/media/logo-black-on-white.3b8d326f7cbe5df6063956502ae59059.svg",
@@ -17,11 +17,11 @@
     "index.html": "/index.html",
     "static/media/azure.svg": "/static/media/azure.394f88bf2c51704e3a1411f477ee3bf8.svg",
     "static/media/unit-tree.svg": "/static/media/unit-tree.1dcb68f224d5ffcfe663.svg",
-    "main.76384a48.css.map": "/static/css/main.76384a48.css.map",
-    "main.77dbb4f3.js.map": "/static/js/main.77dbb4f3.js.map"
+    "main.a058895d.css.map": "/static/css/main.a058895d.css.map",
+    "main.47cf2015.js.map": "/static/js/main.47cf2015.js.map"
   },
   "entrypoints": [
-    "static/css/main.76384a48.css",
-    "static/js/main.77dbb4f3.js"
+    "static/css/main.a058895d.css",
+    "static/js/main.47cf2015.js"
   ]
 }

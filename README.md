@@ -28,6 +28,14 @@ juju dashboard
 
 Once you login following the instructions in the output of `juju dashboard` you should be able to see the controller model, as well as the test model and test application that you deployed.
 
+## Update the dashboard to latest version
+
+This script pulls that latest Github release of the dashboard and extracts it to the appropriate folder in `machine-charm`:
+
+```sh
+./scripts/update-machine-charm-dashboard.sh
+```
+
 # Building and Testing the k8s charm
 
 This guide covers every step necessary to build and test a k8s charm, from updating the facades in js-libjuju, to rebuilding the dashboard source, to building the charm. You can skip some steps if you don't need to update every part of the toolchain.
