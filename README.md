@@ -62,6 +62,12 @@ juju bootstrap micro
 
 ## jaas-dashboard
 
+### Using the latest release
+
+There is no need to `git clone` the repository, in the section "[Building the Kubernetes Charm](#building-the-kubernetes-charm)" we will set the `<image-id>` to `canonicalwebteam/jaas-dashboard:latest`
+
+### Building from source
+
 [Source](https://github.com/canonical-web-and-design/jaas-dashboard#readme)
 
 1. Checkout `git@github.com:canonical-web-and-design/jaas-dashboard.git`
@@ -73,7 +79,7 @@ juju bootstrap micro
 
 You're finally ready to build the charm! Change to the root directory of this repo, and run:
 
-```
+```sh
 # Build the charm
 cd ./k8s-charm
 charmcraft pack
@@ -81,7 +87,10 @@ charmcraft pack
 # Switch to the controller model and deploy the dashboard
 juju switch controller
 # image id must include: "sha256:..."
-juju deploy --resource dashboard-image=<image id> ./juju-dashboard*.charm dashboard
+# using latest OCI release
+juju deploy --resource dashboard-image=canonicalwebteam/jaas-dashboard:latest ./juju-dashboard*.charm dashboard
+# alternatively, using a custom OCI image
+# juju deploy --resource dashboard-image=<image id> ./juju-dashboard*.charm dashboard
 juju relate controller dashboard
 juju dashboard
 ```

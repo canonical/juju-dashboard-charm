@@ -6,23 +6,20 @@ The charm to deploy the dashboard for [Juju](https://juju.is) and [JAAS](https:/
 
 ```bash
 juju switch controller
-juju deploy juju-dashboard
-juju relate juju-dashboard controller
-juju expose juju-dashboard
+juju deploy juju-dashboard dashboard
+juju relate dashboard controller
+juju expose dashboard
 juju dashboard
 ```
 
-## Developing
+## Relations
 
-Create and activate a virtualenv with the development requirements:
+This charm provides an http interface called "dashboard".
 
-    virtualenv -p python3 venv
-    source venv/bin/activate
-    pip install -r requirements-dev.txt
+It requires the "juju-dashboard" interface on the Juju controller charm.
 
-## Testing
+## Contributing
 
-The Python operator framework includes a very nice harness for testing
-operator behaviour without full deployment. Just `run_tests`:
-
-    ./run_tests
+Please see the [Juju SDK docs](https://juju.is/docs/sdk) for guidelines
+on enhancements to this charm following best practice guidelines, and
+`CONTRIBUTING.md` for developer guidance.

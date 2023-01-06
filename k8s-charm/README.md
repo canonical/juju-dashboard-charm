@@ -9,11 +9,17 @@ native one.
 
 ## Usage
 
-TODO
+```bash
+juju switch controller
+juju deploy juju-dashboard-k8s dashboard
+juju relate dashboard controller
+juju expose dashboard
+juju dashboard
+```
 
 ## Relations
 
-This charm provides an http interface called "dashboard."
+This charm provides an http interface called "dashboard".
 
 It requires the "juju-dashboard" interface on the Juju controller charm.
 
