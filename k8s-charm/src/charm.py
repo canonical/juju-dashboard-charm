@@ -9,11 +9,13 @@ import os
 
 from charms.juju_dashboard.v0.juju_dashboard import JujuDashReq
 from jinja2 import Environment, FileSystemLoader
-from ops.charm import CharmBase
+from ops.charm import CharmBase, RelationEvent
 from ops.main import main
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
 
 logger = logging.getLogger(__name__)
+
+DASHBOARD_PORT = 8080
 
 
 class JujuDashboardKubernetesCharm(CharmBase):
@@ -31,16 +33,19 @@ class JujuDashboardKubernetesCharm(CharmBase):
     the controller is established.
 
     """
+
     def __init__(self, *args):
         super().__init__(*args)
 
         self.framework.observe(self.on.install, self._on_install)
 
         self.framework.observe(
-            self.on["controller"].relation_changed, self._on_controller_relation_changed
+            self.on["controller"].relation_changed,
+            self._on_controller_relation_changed,
         )
         self.framework.observe(
-            self.on["dashboard"].relation_changed, self._on_dashboard_relation_changed
+            self.on["dashboard"].relation_changed,
+            self._on_dashboard_relation_changed,
         )
 
     def _on_install(self, _):
@@ -48,9 +53,9 @@ class JujuDashboardKubernetesCharm(CharmBase):
 
     def _on_dashboard_relation_changed(self, event):
         """When something relates to the dashboard, tell it that we speak on port 8080."""
-        event.relation.data[self.app]["port"] = "8080"
+        event.relation.data[self.app]["port"] = DASHBOARD_PORT
 
-    def _on_controller_relation_changed(self, event):
+    def _on_controller_relation_changed(self, event: RelationEvent):
         """A controller relation has been setup; configure our workload."""
         requires = JujuDashReq(self, event.relation, event.app)
         if not requires.data["controller_url"]:
@@ -78,7 +83,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
         env = Environment(loader=FileSystemLoader(os.getcwd()))
         env.filters["bool"] = bool
 
-        config_template = env.get_template("src/config.js.template")
+        config_template = env.get_template("src/config.js.j2")
         config = config_template.render(
             base_app_url="/",
             controller_api_endpoint="/api",
@@ -86,11 +91,12 @@ class JujuDashboardKubernetesCharm(CharmBase):
             is_juju=is_juju,
         )
 
-        nginx_template = env.get_template("src/nginx.conf.template")
+        nginx_template = env.get_template("src/nginx.conf.j2")
         nginx_config = nginx_template.render(
             # nginx proxy_pass expects the protocol to be https
             controller_ws_api=controller_url.replace("wss", "https"),
             dashboard_root="/srv",
+            port=DASHBOARD_PORT,
         )
 
         return config, nginx_config
@@ -118,7 +124,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
         container.add_layer("dashboard", pebble_layer, combine=True)
 
         container.push("/srv/config.js", dashboard_config)
-        container.push("/srv/nginx.config", nginx_config)
+        container.push("/etc/nginx/sites-available/default", nginx_config)
 
         container.autostart()
 

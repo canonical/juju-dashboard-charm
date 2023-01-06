@@ -33,7 +33,10 @@ class JujuDashReq:
     Counterintuitively, this is the Dashboard. The Juju Controller is "providing" us with
     the information the Dashboard needs to connect.
     """
-    def __init__(self, charm: CharmBase, relation: Relation, provider: Application):
+
+    def __init__(
+        self, charm: CharmBase, relation: Relation, provider: Application
+    ):
         """Populate our relation data.
 
         Also tries to send the endpoint data that the dashboard is being hosted at. This
@@ -56,11 +59,10 @@ class JujuDashReq:
             # TODO: handle the situation where there are multiple dashes, and the endpoint
             # is the haproxy address.
             ip = str(charm.model.get_binding(relation).network.ingress_address)
-            relation.data[charm.model.app]['dashboard-ingress'] = ip
+            relation.data[charm.model.app]["dashboard-ingress"] = ip
 
 
 class JujuDashData(Mapping):
-
     def __init__(self, data):
         """Parse the config data from the controller into a Mapping.
 
@@ -78,10 +80,12 @@ class JujuDashData(Mapping):
         """
         # FIXME: Quick hack to fix a k8s bug in the controller charm.
         controller_url = data.get("controller-url")
-        controller_url = controller_url.replace("[", "").replace("]", "")
+        controller_url = (
+            controller_url.replace("[", "").replace(":0]", "").replace("]", "")
+        )
         # End quick hack!
         self._data = {
-            "controller_url": re.sub(r'\/api$', '', controller_url),
+            "controller_url": re.sub(r"\/api$", "", controller_url),
             "identity_provider_url": data.get("identity-provider-url", ""),
             "is_juju": data.get("is-juju", True),
         }
