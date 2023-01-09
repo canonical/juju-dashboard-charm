@@ -2,6 +2,10 @@
 
 This repository contains charms that deploy the dashboard for [Juju](https://juju.is) and [JAAS](https://jaas.ai) into Machine and Kubernetes environments.
 
+[![Charm for Juju Dashboard
+](https://charmhub.io/juju-dashboard/badge.svg)](https://charmhub.io/juju-dashboard)
+[![Charm for Juju Dashboard k8s](https://charmhub.io/juju-dashboard-k8s/badge.svg)](https://charmhub.io/juju-dashboard-k8s)
+
 # Building and Testing the Machine Charm
 
 Building the machine charm is fairly straightforward. You need a machine with Juju 3.0+ installed. The rest of the steps, in brief, are:
@@ -27,6 +31,14 @@ juju dashboard
 ```
 
 Once you login following the instructions in the output of `juju dashboard` you should be able to see the controller model, as well as the test model and test application that you deployed.
+
+## Update the dashboard to latest version
+
+This script pulls that latest Github release of the dashboard and extracts it to the appropriate folder in `machine-charm`:
+
+```sh
+./scripts/update-machine-charm-dashboard.sh
+```
 
 # Building and Testing the k8s charm
 
@@ -62,6 +74,12 @@ juju bootstrap micro
 
 ## jaas-dashboard
 
+### Using the latest release
+
+There is no need to `git clone` the repository, in the section "[Building the Kubernetes Charm](#building-the-kubernetes-charm)" we will set the `<image-id>` to `canonicalwebteam/jaas-dashboard:latest`
+
+### Building from source
+
 [Source](https://github.com/canonical-web-and-design/jaas-dashboard#readme)
 
 1. Checkout `git@github.com:canonical-web-and-design/jaas-dashboard.git`
@@ -73,7 +91,7 @@ juju bootstrap micro
 
 You're finally ready to build the charm! Change to the root directory of this repo, and run:
 
-```
+```sh
 # Build the charm
 cd ./k8s-charm
 charmcraft pack
@@ -81,7 +99,10 @@ charmcraft pack
 # Switch to the controller model and deploy the dashboard
 juju switch controller
 # image id must include: "sha256:..."
-juju deploy --resource dashboard-image=<image id> ./juju-dashboard*.charm dashboard
+# using latest OCI release
+juju deploy --resource dashboard-image=canonicalwebteam/jaas-dashboard:latest ./juju-dashboard*.charm dashboard
+# alternatively, using a custom OCI image
+# juju deploy --resource dashboard-image=<image id> ./juju-dashboard*.charm dashboard
 juju relate controller dashboard
 juju dashboard
 ```
