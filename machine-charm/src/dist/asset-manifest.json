@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.7aa8fb00.css",
-    "main.js": "/static/js/main.f37d2799.js",
+    "main.js": "/static/js/main.f5960c51.js",
     "static/media/kubernetes.svg": "/static/media/kubernetes.f5c2ef9a76c4d9db93921a2016a82660.svg",
     "static/media/aws.svg": "/static/media/aws.80fb338eafdbc954377c1e4592b3e9e0.svg",
     "static/media/logo-black-on-white.svg": "/static/media/logo-black-on-white.3b8d326f7cbe5df6063956502ae59059.svg",
@@ -15,10 +15,10 @@
     "index.html": "/index.html",
     "static/media/azure.svg": "/static/media/azure.394f88bf2c51704e3a1411f477ee3bf8.svg",
     "main.7aa8fb00.css.map": "/static/css/main.7aa8fb00.css.map",
-    "main.f37d2799.js.map": "/static/js/main.f37d2799.js.map"
+    "main.f5960c51.js.map": "/static/js/main.f5960c51.js.map"
   },
   "entrypoints": [
     "static/css/main.7aa8fb00.css",
-    "static/js/main.f37d2799.js"
+    "static/js/main.f5960c51.js"
   ]
 }
