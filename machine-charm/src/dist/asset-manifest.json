@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.a058895d.css",
-    "main.js": "/static/js/main.47cf2015.js",
+    "main.css": "/static/css/main.7aa8fb00.css",
+    "main.js": "/static/js/main.f5960c51.js",
     "static/media/kubernetes.svg": "/static/media/kubernetes.f5c2ef9a76c4d9db93921a2016a82660.svg",
     "static/media/aws.svg": "/static/media/aws.80fb338eafdbc954377c1e4592b3e9e0.svg",
     "static/media/logo-black-on-white.svg": "/static/media/logo-black-on-white.3b8d326f7cbe5df6063956502ae59059.svg",
@@ -10,18 +10,15 @@
     "static/media/bulb.svg": "/static/media/bulb.31f25996f71c7f6ed3ebdb00f3c2b68c.svg",
     "static/media/default-charm-icon.svg": "/static/media/default-charm-icon.22a7fa5d4e6a9aed6d1425709c91fa4a.svg",
     "static/media/gce.svg": "/static/media/gce.cf230f61dadcaf2bc2c0f9f58bf6be95.svg",
-    "static/media/action-logs-icon.svg": "/static/media/action-logs-icon.1a01b6a93ee4ee4f1375920b23ceebdd.svg",
     "static/media/logo-mark.svg": "/static/media/logo-mark.b44c09ab8149c282e47abbad2334c37e.svg",
     "static/media/no-config-params.svg": "/static/media/no-config-params.1840ee6f0e493021c58f4c6420cbea8e.svg",
-    "static/media/run-action-icon.svg": "/static/media/run-action-icon.341fa27f1d27af68b77853615a1d0d0d.svg",
     "index.html": "/index.html",
     "static/media/azure.svg": "/static/media/azure.394f88bf2c51704e3a1411f477ee3bf8.svg",
-    "static/media/unit-tree.svg": "/static/media/unit-tree.1dcb68f224d5ffcfe663.svg",
-    "main.a058895d.css.map": "/static/css/main.a058895d.css.map",
-    "main.47cf2015.js.map": "/static/js/main.47cf2015.js.map"
+    "main.7aa8fb00.css.map": "/static/css/main.7aa8fb00.css.map",
+    "main.f5960c51.js.map": "/static/js/main.f5960c51.js.map"
   },
   "entrypoints": [
-    "static/css/main.a058895d.css",
-    "static/js/main.47cf2015.js"
+    "static/css/main.7aa8fb00.css",
+    "static/js/main.f5960c51.js"
   ]
 }
