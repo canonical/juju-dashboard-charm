@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.7aa8fb00.css",
-    "main.js": "/static/js/main.f5960c51.js",
+    "main.css": "/static/css/main.8708daaa.css",
+    "main.js": "/static/js/main.db2fce67.js",
     "static/media/kubernetes.svg": "/static/media/kubernetes.f5c2ef9a76c4d9db93921a2016a82660.svg",
     "static/media/aws.svg": "/static/media/aws.80fb338eafdbc954377c1e4592b3e9e0.svg",
     "static/media/logo-black-on-white.svg": "/static/media/logo-black-on-white.3b8d326f7cbe5df6063956502ae59059.svg",
@@ -14,11 +14,11 @@
     "static/media/no-config-params.svg": "/static/media/no-config-params.1840ee6f0e493021c58f4c6420cbea8e.svg",
     "index.html": "/index.html",
     "static/media/azure.svg": "/static/media/azure.394f88bf2c51704e3a1411f477ee3bf8.svg",
-    "main.7aa8fb00.css.map": "/static/css/main.7aa8fb00.css.map",
-    "main.f5960c51.js.map": "/static/js/main.f5960c51.js.map"
+    "main.8708daaa.css.map": "/static/css/main.8708daaa.css.map",
+    "main.db2fce67.js.map": "/static/js/main.db2fce67.js.map"
   },
   "entrypoints": [
-    "static/css/main.7aa8fb00.css",
-    "static/js/main.f5960c51.js"
+    "static/css/main.8708daaa.css",
+    "static/js/main.db2fce67.js"
   ]
 }
