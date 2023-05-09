@@ -132,3 +132,42 @@ You must tell your browser to trust the controller's cert in order to get a work
 1. From the CLI, execute `juju dashboard`, and make note of the username and password. You don't need to leave the command running, as you are accessing the dashboard directly, rather than using the proxy server.
 2. In Firefox, visit https://<dashboard ip>.
 3. Login with username and password you obtained in step 1.
+
+# Releasing
+
+## Machine charm
+
+```sh
+charmcraft login
+cd ./machine-charm
+charmcraft pack
+charmcraft upload juju-dashboard_[...].charm
+charmcraft release juju-dashboard --channel=... --revision=...
+```
+
+## K8s charm
+
+### Update the Docker image
+
+```sh
+git clone git@github.com:canonical-web-and-design/jaas-dashboard.git
+cd jaas-dashboard
+DOCKER_BUILDKIT=1 docker build -t juju-dashboard .
+```
+
+Get the the docker image ID with `docker image inspect juju-dashboard | grep "Id"`
+
+```sh
+charmcraft login
+charmcraft upload-resource juju-dashboard-k8s dashboard-image --image=[image-id]
+```
+
+### Update the charm
+
+```sh
+charmcraft login
+cd ./k8s-charm
+charmcraft pack
+charmcraft upload juju-dashboard-k8s*.charm
+charmcraft release juju-dashboard-k8s --channel=... --revision=[output-from-upload] --resource=dashboard-image:[resource-revision-number]
+```
