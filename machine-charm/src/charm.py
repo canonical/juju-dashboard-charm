@@ -68,7 +68,7 @@ class JujuDashboardCharm(CharmBase):
             self._configure(data['controller_url'], data['identity_provider_url'], data['is_juju'])
 
     def _configure(self, controller_url, identity_provider_url, is_juju):
-        """Configure and restart our nginx and jaas-dashboard services."""
+        """Configure and restart our nginx and juju-dashboard services."""
 
         # Load up nginx templates and poke at system.
         env = Environment(loader=FileSystemLoader(os.getcwd()))

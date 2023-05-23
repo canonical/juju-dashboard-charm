@@ -72,17 +72,17 @@ microk8s config | juju add-k8s --client micro
 juju bootstrap micro
 ```
 
-## jaas-dashboard
+## juju-dashboard
 
 ### Using the latest release
 
-There is no need to `git clone` the repository, in the section "[Building the Kubernetes Charm](#building-the-kubernetes-charm)" we will set the `<image-id>` to `canonicalwebteam/jaas-dashboard:latest`
+There is no need to `git clone` the repository, in the section "[Building the Kubernetes Charm](#building-the-kubernetes-charm)" we will set the `<image-id>` to `canonicalwebteam/juju-dashboard:latest`
 
 ### Building from source
 
-[Source](https://github.com/canonical-web-and-design/jaas-dashboard#readme)
+[Source](https://github.com/canonical/juju-dashboard#readme)
 
-1. Checkout `git@github.com:canonical-web-and-design/jaas-dashboard.git`
+1. Checkout `git@github.com:canonical/juju-dashboard.git`
 2. Build the container with `DOCKER_BUILDKIT=1 docker build -t juju-dashboard .`
 3. Take note of the image id. You can get it with `docker image inspect juju-dashboard | grep "Id"`
 4. Add the docker image that you just build to microk8s' build in docker repo, as it cannot talk to the docker registry on the host machine: `docker image save juju-dashboard | microk8s ctr image import -`
@@ -100,7 +100,7 @@ charmcraft pack
 juju switch controller
 # image id must include: "sha256:..."
 # using latest OCI release
-juju deploy --resource dashboard-image=canonicalwebteam/jaas-dashboard:latest ./juju-dashboard*.charm dashboard
+juju deploy --resource dashboard-image=canonicalwebteam/juju-dashboard:latest ./juju-dashboard*.charm dashboard
 # alternatively, using a custom OCI image
 # juju deploy --resource dashboard-image=<image id> ./juju-dashboard*.charm dashboard
 juju relate controller dashboard
@@ -150,8 +150,8 @@ charmcraft release juju-dashboard --channel=... --revision=...
 ### Update the Docker image
 
 ```sh
-git clone git@github.com:canonical-web-and-design/jaas-dashboard.git
-cd jaas-dashboard
+git clone git@github.com:canonical/juju-dashboard.git
+cd juju-dashboard
 DOCKER_BUILDKIT=1 docker build -t juju-dashboard .
 ```
 

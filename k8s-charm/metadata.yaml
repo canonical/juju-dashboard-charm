@@ -3,8 +3,8 @@
 
 name: juju-dashboard-k8s
 assumes:
-- k8s-api
-- juju >= 3.0
+  - k8s-api
+  - juju >= 3.0
 description: |
   Kubernetes Charm for the Juju Dashboard
 summary: |
@@ -18,8 +18,8 @@ resources:
   dashboard-image:
     type: oci-image
     description: |
-      Canonical build of the dashboard (canonicalwebteam/jaas-dashboard:latest)
-    
+      Canonical build of the dashboard (canonicalwebteam/juju-dashboard:latest)
+
 provides:
   dashboard:
     interface: http
@@ -27,5 +27,3 @@ provides:
 requires:
   controller:
     interface: juju-dashboard
-    
-

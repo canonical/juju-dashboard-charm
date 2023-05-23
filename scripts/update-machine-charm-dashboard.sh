@@ -8,7 +8,7 @@ rm -rf $dist_path/*
 echo "Downloading the latest release..."
 rm -f *.tar.bz2
 
-wget -qO- https://api.github.com/repos/canonical/jaas-dashboard/releases/latest \
+wget -qO- https://api.github.com/repos/canonical/juju-dashboard/releases/latest \
 | grep tar.bz2 \
 | cut -d : -f 2,3 \
 | tr -d \" \
