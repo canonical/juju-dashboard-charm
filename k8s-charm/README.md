@@ -25,7 +25,7 @@ It requires the "juju-dashboard" interface on the Juju controller charm.
 
 ## OCI Images
 
-This charm uses the JAAS team's build of the dashboard: canonicalwebteam/jaas-dashboard:latest
+This charm uses the JAAS team's build of the dashboard: canonicalwebteam/juju-dashboard:latest
 
 ## Contributing
 
