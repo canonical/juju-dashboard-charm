@@ -1,14 +1,18 @@
 # Copyright 2021 Canonical
 # See LICENSE file for licensing details.
+
 name: juju-dashboard
 assumes:
 - juju >= 3.0
-display-name: |
-  Charm for Juju Dashboard
+display-name: Juju Dashboard
 description: |
-  Charm for the Juju Dashboard
-summary: |
-  Charm for the Juju Dashboard
+  Juju Dashboard displays your controllers and models, allowing you to see the status of your deployments, manage access, run actions and configure applications. The dashboard can be used with your local Juju environments and can also be found as a part of JAAS.
+summary: View the real-time status of your Juju or JAAS environment.
+source: https://github.com/canonical/juju-dashboard
+issues: https://github.com/canonical/juju-dashboard/issues
+website:
+  - https://juju.is
+  - https://charmhub.io
 
 bases:
   - name: ubuntu
