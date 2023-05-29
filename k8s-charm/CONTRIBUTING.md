@@ -13,8 +13,8 @@ Create and activate a virtualenv with the development requirements:
 
 ## Intended use case
 
-This charm is meant to implement the Juju Dashboard. It is distributed
-along with Juju, and installed automagically.
+This charm provides the Juju Dashboard and is intended to be deployed in a
+controller model.
 
 
 ## Roadmap
