@@ -8,6 +8,7 @@ assumes:
 display-name: Juju Dashboard k8s
 description: |
   Juju Dashboard displays your controllers and models, allowing you to see the status of your deployments, manage access, run actions and configure applications.
+docs: https://discourse.charmhub.io/t/juju-dashboard-k8s-docs-index/10773
 summary: View the real-time status of your Juju environment.
 source: https://github.com/canonical/juju-dashboard
 issues: https://github.com/canonical/juju-dashboard/issues

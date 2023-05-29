@@ -3,10 +3,11 @@
 
 name: juju-dashboard
 assumes:
-- juju >= 3.0
+  - juju >= 3.0
 display-name: Juju Dashboard
 description: |
   Juju Dashboard displays your controllers and models, allowing you to see the status of your deployments, manage access, run actions and configure applications. The dashboard can be used with your local Juju environments and can also be found as a part of JAAS.
+docs: https://discourse.charmhub.io/t/juju-dashboard-docs-index/10772
 summary: View the real-time status of your Juju or JAAS environment.
 source: https://github.com/canonical/juju-dashboard
 issues: https://github.com/canonical/juju-dashboard/issues
