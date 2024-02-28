@@ -10,7 +10,6 @@ temporary) quirk with the way that the Juju 3.0 beta was returning networking da
 
 """
 import re
-from subprocess import check_output
 from typing import Mapping
 
 from ops.charm import CharmBase

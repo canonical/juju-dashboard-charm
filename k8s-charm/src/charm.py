@@ -7,7 +7,7 @@
 import logging
 import os
 
-from charms.juju_dashboard.v0.juju_dashboard import JujuDashReq
+from charms.juju_dashboard.v0.juju_dashboard import JujuDashData, JujuDashReq
 from jinja2 import Environment, FileSystemLoader
 from ops.charm import CharmBase, RelationEvent
 from ops.main import main
@@ -44,9 +44,20 @@ class JujuDashboardKubernetesCharm(CharmBase):
             self._on_controller_relation_changed,
         )
         self.framework.observe(
+            self.on["controller"].relation_departed,
+            self._on_relation_departed,
+        )
+        self.framework.observe(
             self.on["dashboard"].relation_changed,
             self._on_dashboard_relation_changed,
         )
+        self.framework.observe(
+            self.on["dashboard"].relation_departed,
+            self._on_relation_departed,
+        )
+        self.framework.observe(self.on.config_changed, self._on_config_changed)
+        self.framework.observe(self.on.update_status, self._on_config_changed)
+        self.framework.observe(self.on.upgrade_charm, self._on_config_changed)
 
     def _on_install(self, _):
         self.unit.status = MaintenanceStatus("Awaiting controller relation.")
@@ -55,6 +66,9 @@ class JujuDashboardKubernetesCharm(CharmBase):
         """When something relates to the dashboard, tell it that we speak on port 8080."""
         event.relation.data[self.app]["port"] = DASHBOARD_PORT
 
+    def _on_relation_departed(self, event: RelationEvent):
+        self.unit.status = BlockedStatus("Missing controller integration")
+
     def _on_controller_relation_changed(self, event: RelationEvent):
         """A controller relation has been setup; configure our workload."""
         requires = JujuDashReq(self, event.relation, event.app)
@@ -62,16 +76,34 @@ class JujuDashboardKubernetesCharm(CharmBase):
             self.unit.status = BlockedStatus("Missing controller URL")
             return
 
-        dashboard_config, nginx_config = self._render_config(**requires.data)
+        self._update(event, **requires.data)
+
+    def _on_config_changed(self, event):
+        relation = self.model.get_relation("controller")
+        if not relation:
+            self.unit.status = BlockedStatus("Missing controller integration")
+            return
+
+        data = JujuDashData(relation.data[relation.app])
+        self._update(event, **data)
+
+    def _update(self, event, controller_url, identity_provider_url, is_juju):
+        dashboard_config, nginx_config = self._render_config(
+            controller_url, identity_provider_url, is_juju)
         container = self.unit.get_container("dashboard")
         if not container.can_connect():
             event.defer()
             self.unit.status = MaintenanceStatus("Waiting for container.")
             return
 
-        self._add_layer(container, dashboard_config, nginx_config)
+        self._configure(container, dashboard_config, nginx_config)
 
         self.unit.status = ActiveStatus()
+
+    def _bool(self, boolean_variable):
+        if type(boolean_variable) is str:
+            return boolean_variable.lower() == "true"
+        return boolean_variable
 
     def _render_config(self, controller_url, identity_provider_url, is_juju):
         """
@@ -81,7 +113,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
         """
 
         env = Environment(loader=FileSystemLoader(os.getcwd()))
-        env.filters["bool"] = bool
+        env.filters["bool"] = self._bool
 
         config_template = env.get_template("src/config.js.j2")
         config = config_template.render(
@@ -89,6 +121,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
             controller_api_endpoint="/api",
             identity_provider_url=identity_provider_url,
             is_juju=is_juju,
+            analytics_enabled=self.config.get('analytics-enabled'),
         )
 
         nginx_template = env.get_template("src/nginx.conf.j2")
@@ -101,7 +134,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
 
         return config, nginx_config
 
-    def _add_layer(self, container, dashboard_config, nginx_config):
+    def _configure(self, container, dashboard_config, nginx_config):
         """
         Add and configure our pebble layer.
 

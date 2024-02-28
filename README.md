@@ -25,6 +25,8 @@ juju deploy ubuntu
 
 # Switch to the controller model and setup the dashboard
 juju switch controller
+# If apt fails to install packages when deploying the dashboard you may need to run the following:
+# sudo iptables -P FORWARD ACCEPT
 juju deploy ./juju-dashboard*.charm dashboard
 juju relate controller dashboard
 juju dashboard
@@ -141,7 +143,7 @@ You must tell your browser to trust the controller's cert in order to get a work
 charmcraft login
 cd ./machine-charm
 charmcraft pack
-charmcraft upload juju-dashboard_[...].charm
+charmcraft upload juju-dashboard*.charm
 charmcraft release juju-dashboard --channel=... --revision=...
 ```
 
