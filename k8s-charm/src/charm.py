@@ -23,7 +23,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
 
     This is the kubernetes version of the Juju Dashboard charm. The charm creates a nodejs
     service providing the dashboard gui for a Juju controller. Relating to a controller
-    gives the dashboad the information it needs to talk to a specific local controller.
+    gives the dashboard the information it needs to talk to a specific local controller.
 
     This charm requires a `controller` endpoint, and provides a `dashboard` endpoint.
     - The controller relation allows the dashboard to connect to a Juju controller.

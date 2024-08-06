@@ -26,8 +26,8 @@ server {
         try_files /config.js =404;
     }
 
-    location /static {
-        try_files $uri $uri/ =404; 
+    location /assets {
+        try_files $uri =404; 
     }
 
     location ~ /api$ {

@@ -23,7 +23,7 @@ class JujuDashboardCharm(CharmBase):
 
     This is the "machine" version of the Juju Dashboard charm. The charm deploys a nodejs
     service (jass-dashboard), which provides the dashboard gui for a Juju
-    controller. Relating to a controller gives the dashboad the information it needs to
+    controller. Relating to a controller gives the dashboard the information it needs to
     talk to a specific local controller.
 
     This charm requires a `controller` endpoint, and provides a `dashboard` endpoint.
