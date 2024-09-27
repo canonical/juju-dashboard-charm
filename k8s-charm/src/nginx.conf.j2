@@ -24,6 +24,7 @@ server {
         try_files $uri =404; 
     }
 
+{% if is_juju == true or (is_juju is string and is_juju | lower == "true") %}
     location ~ /api$ {
         proxy_pass {{controller_ws_api}};
         proxy_http_version 1.1;
@@ -39,4 +40,5 @@ server {
         proxy_set_header Connection $connection_upgrade;
         proxy_set_header Host $host;
     }
+{% endif %}
 }

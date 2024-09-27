@@ -118,7 +118,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
         config_template = env.get_template("src/config.js.j2")
         config = config_template.render(
             base_app_url="/",
-            controller_api_endpoint="/api",
+            controller_api_endpoint= ("" if self._bool(is_juju) else controller_url) + "/api",
             identity_provider_url=identity_provider_url,
             is_juju=is_juju,
             analytics_enabled=self.config.get('analytics-enabled'),
@@ -130,6 +130,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
             controller_ws_api=controller_url.replace("wss", "https"),
             dashboard_root="/srv",
             port=DASHBOARD_PORT,
+            is_juju=is_juju,
         )
 
         return config, nginx_config
