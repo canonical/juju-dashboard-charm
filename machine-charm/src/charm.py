@@ -94,7 +94,7 @@ class JujuDashboardCharm(CharmBase):
         config_template = env.get_template("src/config.js.template")
         config_template.stream(
             base_app_url="/",
-            controller_api_endpoint="/api",
+            controller_api_endpoint=("" if self._bool(is_juju) else controller_url) + "/api",
             identity_provider_url=identity_provider_url,
             is_juju=is_juju,
             analytics_enabled=self.config.get('analytics-enabled')
@@ -113,7 +113,8 @@ class JujuDashboardCharm(CharmBase):
         nginx_template = nginx_template.stream(
             controller_ws_api=controller_url,
             dashboard_root=os.getcwd(),
-            dns_name=self.config.get('dns-name')
+            dns_name=self.config.get('dns-name'),
+            is_juju=is_juju
         ).dump("/etc/nginx/sites-available/default")
 
         nginx_status = os.system("sudo systemctl restart nginx")
