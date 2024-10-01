@@ -78,17 +78,9 @@ class JujuDashData(Mapping):
 
         """
         # Juju controller provides is-juju, while JAAS provides is_juju.
-        is_juju = (
-            data.get("is_juju", True)
-            if data.get("is-juju") is None
-            else data.get("is-juju")
-        )
+        is_juju = data.get("is_juju") or data.get("is-juju", True)
         # Juju controller provides controller-url, while JAAS provides controller_url.
-        controller_url = (
-            data.get("controller_url", "")
-            if data.get("controller-url") is None
-            else data.get("controller-url")
-        )
+        controller_url = data.get("controller_url") or data.get("controller-url", "")
         # FIXME: Quick hack to fix a k8s bug in the controller charm.
         controller_url = (
             controller_url.replace("[", "").replace(":0]", "").replace("]", "")

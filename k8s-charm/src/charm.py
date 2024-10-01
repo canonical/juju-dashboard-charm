@@ -130,7 +130,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
             controller_ws_api=controller_url.replace("wss://", "https://"),
             dashboard_root="/srv",
             port=DASHBOARD_PORT,
-            is_juju=is_juju,
+            is_juju=self._bool(is_juju),
         )
 
         return config, nginx_config

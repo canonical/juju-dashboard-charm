@@ -30,7 +30,7 @@ server {
         try_files $uri =404; 
     }
 
-{% if is_juju == true or (is_juju is string and is_juju | lower == "true") %}
+{% if is_juju %}
     location ~ /api$ {
         proxy_pass {{controller_ws_api}};
         proxy_http_version 1.1;

@@ -114,7 +114,7 @@ class JujuDashboardCharm(CharmBase):
             controller_ws_api=controller_url,
             dashboard_root=os.getcwd(),
             dns_name=self.config.get('dns-name'),
-            is_juju=is_juju
+            is_juju=self._bool(is_juju)
         ).dump("/etc/nginx/sites-available/default")
 
         nginx_status = os.system("sudo systemctl restart nginx")
