@@ -23,7 +23,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
 
     This is the kubernetes version of the Juju Dashboard charm. The charm creates a nodejs
     service providing the dashboard gui for a Juju controller. Relating to a controller
-    gives the dashboad the information it needs to talk to a specific local controller.
+    gives the dashboard the information it needs to talk to a specific local controller.
 
     This charm requires a `controller` endpoint, and provides a `dashboard` endpoint.
     - The controller relation allows the dashboard to connect to a Juju controller.
@@ -118,7 +118,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
         config_template = env.get_template("src/config.js.j2")
         config = config_template.render(
             base_app_url="/",
-            controller_api_endpoint="/api",
+            controller_api_endpoint=("" if self._bool(is_juju) else controller_url) + "/api",
             identity_provider_url=identity_provider_url,
             is_juju=is_juju,
             analytics_enabled=self.config.get('analytics-enabled'),
@@ -127,9 +127,10 @@ class JujuDashboardKubernetesCharm(CharmBase):
         nginx_template = env.get_template("src/nginx.conf.j2")
         nginx_config = nginx_template.render(
             # nginx proxy_pass expects the protocol to be https
-            controller_ws_api=controller_url.replace("wss", "https"),
+            controller_ws_api=controller_url.replace("wss://", "https://"),
             dashboard_root="/srv",
             port=DASHBOARD_PORT,
+            is_juju=self._bool(is_juju),
         )
 
         return config, nginx_config

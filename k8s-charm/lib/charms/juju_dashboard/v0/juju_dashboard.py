@@ -78,7 +78,7 @@ class JujuDashData(Mapping):
 
         """
         # FIXME: Quick hack to fix a k8s bug in the controller charm.
-        controller_url = data.get("controller-url")
+        controller_url = data.get("controller-url", "")
         controller_url = (
             controller_url.replace("[", "").replace(":0]", "").replace("]", "")
         )

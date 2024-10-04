@@ -30,14 +30,14 @@ class TestCharm(unittest.TestCase):
 
     def test_on_controller_relation_changed(self):
         self.harness.update_relation_data(self.rel_id, "controller", {
-            "is-juju": "False",
+            "is-juju": "True",
         })
         with self.container.pull('/etc/nginx/sites-available/default') as f:
             nginx_config = f.read()
         self.assertTrue("https://10.10.10.1:107070" in nginx_config)
         with self.container.pull('/srv/config.js') as f:
             config = f.read()
-        self.assertTrue("isJuju: false" in config)
+        self.assertTrue("isJuju: true" in config)
 
     def test_relation_departed(self):
         self.harness.model.unit.status = ActiveStatus()
