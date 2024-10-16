@@ -9,6 +9,7 @@ import os
 
 from charmhelpers.core import hookenv  # FIXME: This needs to be ported to ops.
 from charms.juju_dashboard.v0.juju_dashboard import JujuDashData, JujuDashReq
+from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from jinja2 import Environment, FileSystemLoader
 from ops.charm import CharmBase
 from ops.framework import StoredState
@@ -49,6 +50,13 @@ class JujuDashboardCharm(CharmBase):
         self.framework.observe(self.on.upgrade_charm, self._on_config_changed)
 
         self._stored.set_default(controllerData={})
+
+        require_nginx_route(
+            charm=self,
+            service_hostname=self.app.name,
+            service_name=self.app.name,
+            service_port=8080,
+        )
 
     def _on_install(self, _):
         os.system("apt install -y nginx")  # FIXME: use linux system tools
