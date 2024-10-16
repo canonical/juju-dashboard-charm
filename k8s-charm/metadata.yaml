@@ -33,3 +33,5 @@ provides:
 requires:
   controller:
     interface: juju-dashboard
+  nginx-route:
+    interface: nginx-route
