@@ -64,7 +64,7 @@ class JujuDashboardKubernetesCharm(CharmBase):
             charm=self,
             service_hostname=self.app.name,
             service_name=self.app.name,
-            service_port=8080
+            service_port=DASHBOARD_PORT,
         )
 
     def _on_install(self, _):
