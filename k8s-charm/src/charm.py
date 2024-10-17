@@ -8,6 +8,7 @@ import logging
 import os
 
 from charms.juju_dashboard.v0.juju_dashboard import JujuDashData, JujuDashReq
+from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from jinja2 import Environment, FileSystemLoader
 from ops.charm import CharmBase, RelationEvent
 from ops.main import main
@@ -58,6 +59,13 @@ class JujuDashboardKubernetesCharm(CharmBase):
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on.update_status, self._on_config_changed)
         self.framework.observe(self.on.upgrade_charm, self._on_config_changed)
+
+        require_nginx_route(
+            charm=self,
+            service_hostname=self.app.name,
+            service_name=self.app.name,
+            service_port=DASHBOARD_PORT,
+        )
 
     def _on_install(self, _):
         self.unit.status = MaintenanceStatus("Awaiting controller relation.")
