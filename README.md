@@ -48,11 +48,19 @@ This guide covers every step necessary to build and test a k8s charm, from updat
 
 ## Install Juju 3.0
 
-Bulid from [source](https://github.com/juju/juju), or `snap install --channel=3.0/beta juju`
+Build from [source](https://github.com/juju/juju), or `snap install --channel=3.0/beta juju`
 
 ## Install Docker Engine
 
-Follow the [guide on the docker website](https://docs.docker.com/desktop/install/linux-install/) to install the latest version of the Docker engine.
+Install the latest version of the Docker Engine using the snap:
+
+```ssh
+sudo snap install docker
+sudo addgroup --system docker
+sudo adduser $USER docker
+sudo snap disable docker
+sudo snap enable docker
+```
 
 ## Bootstrap microk8s
 
@@ -63,7 +71,7 @@ In brief:
 ```
 snap install microk8s --classic
 
-sudo usermod -a -G microk8s $USER
+sudo usermod -a -G snap_microk8s $USER
 sudo chown -f -R $USER ~/.kube
 su - $USER
 
@@ -78,11 +86,11 @@ juju bootstrap micro
 
 ### Using the latest release
 
-There is no need to `git clone` the repository, in the section "[Building the Kubernetes Charm](#building-the-kubernetes-charm)" we will set the `<image-id>` to `canonicalwebteam/juju-dashboard:latest`
+The k8s charm can be tested with previously released versions of the dashboard if a Docker image containing that version of the dashboard has been uploaded as [a resource](https://charmhub.io/juju-dashboard-k8s/resources/dashboard-image) to Charmhub. In the section "[Building the Kubernetes Charm](#building-the-kubernetes-charm)" the latest image can be used with `--resource dashboard-image=canonicalwebteam/juju-dashboard:latest`.
 
 ### Building from source
 
-[Source](https://github.com/canonical/juju-dashboard#readme)
+When testing or publishing a previously unreleased version of the dashboard a new Docker image will need to be built from the dashboard [source](https://github.com/canonical/juju-dashboard#readme).
 
 1. Checkout `git@github.com:canonical/juju-dashboard.git`
 2. Build the container with `DOCKER_BUILDKIT=1 docker build -t juju-dashboard .`
@@ -100,11 +108,10 @@ charmcraft pack
 
 # Switch to the controller model and deploy the dashboard
 juju switch controller
-# image id must include: "sha256:..."
 # using latest OCI release
 juju deploy --resource dashboard-image=canonicalwebteam/juju-dashboard:latest ./juju-dashboard*.charm dashboard
 # alternatively, using a custom OCI image
-# juju deploy --resource dashboard-image=<image id> ./juju-dashboard*.charm dashboard
+# juju deploy --resource dashboard-image=$(docker image inspect juju-dashboard --format "{{.ID}}") ./juju-dashboard*.charm dashboard
 juju relate controller dashboard
 juju dashboard
 ```
@@ -113,7 +120,7 @@ Login to the dashboard, per the instructions from the `juju dashboard` command.
 
 # Tips and Tricks for Testing
 
-## Acccess the Dashboard Without a Proxy
+## Access the Dashboard Without a Proxy
 
 Sometimes, it may be useful to access the dashboard directly, rather than through the ssh tunnel. (E.g., you are trying to determine which part of the pipeline has broken, or access a test server remotely.)
 
@@ -144,7 +151,10 @@ charmcraft login
 cd ./machine-charm
 charmcraft pack
 charmcraft upload juju-dashboard*.charm
-charmcraft release juju-dashboard --channel=... --revision=...
+# If upload fails with "No keyring found to store or retrieve credentials from."
+# Run charmcraft login --export ~/secrets.auth
+# Followed by export CHARMCRAFT_AUTH=$(cat ~/secrets.auth)
+charmcraft release juju-dashboard --channel=... --revision=[output-from-upload]
 ```
 
 ## K8s charm
