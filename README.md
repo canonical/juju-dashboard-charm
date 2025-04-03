@@ -38,6 +38,8 @@ Once you login following the instructions in the output of `juju dashboard` you 
 
 This script pulls that latest Github release of the dashboard and extracts it to the appropriate folder in `machine-charm`:
 
+Note: you can optionally pass a dashboard release tag to the script e.g. `./scripts/update-machine-charm-dashboard.sh 1.2.3`
+
 ```sh
 ./scripts/update-machine-charm-dashboard.sh
 ```
