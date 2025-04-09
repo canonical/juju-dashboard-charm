@@ -15,4 +15,6 @@ bases:
 
 parts:
   charm:
-    charm-python-packages: [setuptools]
+    charm-python-packages:
+      - setuptools
+      - wheel==0.45.1
