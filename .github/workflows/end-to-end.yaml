@@ -1,0 +1,50 @@
+name: End-to-end tests
+on:
+  pull_request:
+    types:
+      - labeled
+      - opened
+      - synchronize
+      - reopened
+
+env:
+  # Repository to trigger the action
+  ACTION_REPO: canonical/juju-dashboard
+  # Ref which contains workflow file
+  ACTION_REF: feat/wd-20943-workflow-triggers
+  # Workflow file
+  ACTION_FILE: end-to-end.yml
+
+jobs:
+  trigger-juju-dashboard-e2e:
+    name: Trigger end-to-end tests in Juju Dashboard.
+    runs-on: ubuntu-22.04
+    if: contains(github.event.pull_request.labels.*.name, 'e2e')
+    steps:
+      - name: Send API request to trigger tests.
+        id: trigger
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          INPUT=$(cat << EOF
+          {
+            "dashboard-source": "branch",
+            "dashboard-charm-ref": "${{ github.head_ref }}"
+          }
+          EOF
+          )
+          # Trigger the workflow
+          echo "$INPUT" | gh workflow run -R "$ACTION_REPO" -r "$ACTION_REF" "$ACTION_FILE" --json
+
+          # Try guess the ID of the workflow
+          GH_OUTPUT=$(gh run list -R "$ACTION_REPO" --branch "$ACTION_REF" --workflow "$ACTION_FILE" --event "workflow_dispatch" --limit 1 --json "databaseId")
+          RUN_ID=$(echo "$GH_OUTPUT" | jq ".[0].databaseId")
+          echo "run-id=$RUN_ID" >> "$GITHUB_OUTPUT"
+      - name: Watch for run completion
+        run: |
+          gh run watch -R "$ACTION_REPO" "${{ steps.trigger.outputs.run-id }}" --exit-status
+          EXIT_STATUS="$?"
+          if [ $EXIT_STATUS -ne 0 ]; then
+            echo "External run failed"
+            exit 1
+          fi
